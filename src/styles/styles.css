@@ -1,0 +1,243 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: url("/public/bg.png") center center fixed;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.owner-container {
+  padding: 20px;
+}
+.ant-table-thead > tr > th {
+  background-color: #f5f5f5;
+}
+
+.ant-modal-footer {
+  display: none;
+}
+
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  margin-top: 10px;
+  font-size: 24px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.pink-button {
+  background-color: #ff69b4;
+  border-color: #ff69b4;
+  color: white;
+}
+
+.pink-button:hover {
+  background-color: #ff85c1;
+  border-color: #ff85c1;
+}
+
+.box {
+  display: flex;
+  width: 900px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.form-section {
+  width: 50%;
+  padding: 40px;
+  background: #fff;
+}
+
+.image-section {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(180deg, #c874b1, #ff9a9e);
+  color: #fff;
+  padding: 40px;
+  text-align: center;
+}
+
+.image-section h2 {
+  margin-bottom: 20px;
+}
+
+.image-section p {
+  margin-bottom: 20px;
+}
+
+.image-section img {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.image-section .button {
+  background: #fff;
+  color: #ff6b6b;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.image-section .button:hover {
+  background: #ede1e8;
+  color: #fa44bb;
+}
+
+.pink-button {
+  background: #ed77b2;
+  border-color: #e1a4c0;
+  color: #fff;
+  width: 100%;
+}
+
+.pink-button:hover {
+  background: #f0a3a3;
+  border-color: #ff4e4e;
+}
+
+.ant-form-item {
+  margin-bottom: 16px;
+}
+
+.ant-input::placeholder,
+.ant-input-password input::placeholder,
+.ant-select-selection-placeholder {
+  color: #bbb;
+}
+
+.ant-select-selector {
+  background-color: #fff !important;
+  color: #333 !important;
+}
+
+.ant-checkbox-wrapper .ant-checkbox {
+  margin-right: 8px;
+}
+
+/* Styles for dashboard layout */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.dashboard-header {
+  background-color: #6492dd;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-icon {
+  width: 100px;
+  height: 120px;
+  margin-right: 10px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.dashboard-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #ff69b4; /* Pink tone */
+  color: white;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 72px); /* Adjusted for header height */
+}
+
+.sidebar button {
+  background-color: #eee6eb; /* Lighter pink tone */
+  border: none;
+  color: rgb(139, 3, 87);
+  padding: 15px;
+  margin: 10px 0;
+  text-align: left;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.3s;
+  font-size: 16px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar button:hover {
+  background-color: #dfd0d6; /* Darker pink tone */
+}
+
+.sidebar-icon {
+  margin-right: 10px;
+  width: 50px; /* Increased size */
+  height: 50px; /* Increased size */
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  background-color: #ecf0f1;
+  overflow-y: auto;
+  width: calc(100% - 250px);
+  max-width: 1000px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    flex-direction: column;
+  }
+
+  .dashboard-content {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 10px 0;
+    height: auto; /* Reset height for mobile view */
+  }
+
+  .sidebar button {
+    flex: 1;
+    margin: 5px;
+  }
+
+  .content {
+    flex: 1;
+    padding: 10px;
+    width: 100%;
+    max-width: 100%;
+  }
+}
