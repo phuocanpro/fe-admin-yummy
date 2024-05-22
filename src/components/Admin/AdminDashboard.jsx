@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import UserManagement from "./UserManagement";
 import RestaurantManagement from "./RestaurantManagement";
 import DishManagement from "./DishManagement";
@@ -7,9 +8,12 @@ import AdminIcon from "../../assets/images/admin-icon.png";
 import userIcon from "../../assets/images/user-icon.png";
 import restaurantIcon from "../../assets/images/restaurant-icon.png";
 import dishIcon from "../../assets/images/dish-icon.png";
+import logoutIcon from "../../assets/images/logout-icon.png"; // Ensure you have a logout icon
 
 const AdminDashboard = () => {
   const [activeComponent, setActiveComponent] = useState("UserManagement");
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const navigate = useNavigate();
 
   const renderComponent = () => {
     switch (activeComponent) {
@@ -24,11 +28,25 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleLogout = () => {
+    setShowLogoutModal(false);
+    navigate("/login");
+  };
+
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
-        <img src={AdminIcon} alt="Admin Icon" className="header-icon" />
-        <h2>Admin Dashboard</h2>
+        <div className="header-left">
+          <img src={AdminIcon} alt="Admin Icon" className="header-icon" />
+          <h2>Admin Dashboard</h2>
+        </div>
+        <button
+          className="logout-button"
+          onClick={() => setShowLogoutModal(true)}
+        >
+          <img src={logoutIcon} alt="Logout Icon" className="logout-icon" />{" "}
+          Logout
+        </button>
       </header>
       <div className="dashboard-content">
         <div className="sidebar">
@@ -51,6 +69,18 @@ const AdminDashboard = () => {
         </div>
         <div className="content">{renderComponent()}</div>
       </div>
+      {showLogoutModal && (
+        <div className="logout-modal-overlay">
+          <div className="logout-modal">
+            <h3>Logout</h3>
+            <p>Bạn muốn đăng xuất?</p>
+            <div className="modal-buttons">
+              <button onClick={() => setShowLogoutModal(false)}>Cancel</button>
+              <button onClick={handleLogout}>Logout</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

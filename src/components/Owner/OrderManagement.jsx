@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Table, Button, Modal, Form, Input } from "antd";
 import { orders, users, restaurants } from "../../data/fakeData";
 import "../../styles/styles.css";
-import { PlusOutlined, EditOutlined } from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const OrderManagement = () => {
   const [orderData, setOrderData] = useState(orders);
@@ -20,6 +20,10 @@ const OrderManagement = () => {
       setOrderData([...orderData, { ...values, id: orderData.length + 1 }]);
     }
     setIsModalVisible(false);
+  };
+
+  const handleDeleteOrder = (id) => {
+    setOrderData(orderData.filter((order) => order.id !== id));
   };
 
   const showModal = (order) => {
@@ -52,13 +56,22 @@ const OrderManagement = () => {
       title: "Hành động",
       key: "actions",
       render: (text, record) => (
-        <Button
-          className="pink-button"
-          icon={<EditOutlined />}
-          onClick={() => showModal(record)}
-        >
-          Sửa
-        </Button>
+        <div className="action-buttons">
+          <Button
+            className="pink-button"
+            icon={<EditOutlined />}
+            onClick={() => showModal(record)}
+          >
+            Sửa
+          </Button>
+          <Button
+            className="pink-button"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteOrder(record.id)}
+          >
+            Xóa
+          </Button>
+        </div>
       ),
     },
   ];
