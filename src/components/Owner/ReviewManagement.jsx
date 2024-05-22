@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Table, Button, Modal, Form, Input, Rate } from "antd";
 import { reviews, dishes, users } from "../../data/fakeData";
 import "../../styles/styles.css";
-import { PlusOutlined, EditOutlined } from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const ReviewManagement = () => {
   const [reviewData, setReviewData] = useState(reviews);
@@ -26,6 +26,14 @@ const ReviewManagement = () => {
       ]);
     }
     setIsModalVisible(false);
+  };
+
+  const handleDeleteReview = (item_id, user_id) => {
+    setReviewData(
+      reviewData.filter(
+        (review) => review.item_id !== item_id || review.user_id !== user_id
+      )
+    );
   };
 
   const showModal = (review) => {
@@ -62,13 +70,22 @@ const ReviewManagement = () => {
       title: "Hành động",
       key: "actions",
       render: (text, record) => (
-        <Button
-          className="pink-button"
-          icon={<EditOutlined />}
-          onClick={() => showModal(record)}
-        >
-          Sửa
-        </Button>
+        <div className="action-buttons">
+          <Button
+            className="pink-button"
+            icon={<EditOutlined />}
+            onClick={() => showModal(record)}
+          >
+            Sửa
+          </Button>
+          <Button
+            className="pink-button"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteReview(record.item_id, record.user_id)}
+          >
+            Xóa
+          </Button>
+        </div>
       ),
     },
   ];

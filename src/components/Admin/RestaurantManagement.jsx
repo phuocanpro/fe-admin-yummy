@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Table, Button, Modal, Form, Input } from "antd";
-import { PlusOutlined, EditOutlined } from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { restaurants } from "../../data/fakeData";
-import "../../styles/styles.css"; // Make sure you have the appropriate styles in this file
+import "../../styles/styles.css";
 
 const RestaurantManagement = () => {
   const [restaurantData, setRestaurantData] = useState(restaurants);
@@ -27,6 +27,12 @@ const RestaurantManagement = () => {
     setIsModalVisible(false);
   };
 
+  const handleDeleteRestaurant = (id) => {
+    setRestaurantData(
+      restaurantData.filter((restaurant) => restaurant.id !== id)
+    );
+  };
+
   const showModal = (restaurant) => {
     setCurrentRestaurant(restaurant);
     setIsModalVisible(true);
@@ -41,22 +47,27 @@ const RestaurantManagement = () => {
     { title: "Tên", dataIndex: "name", key: "name" },
     { title: "Địa chỉ", dataIndex: "address", key: "address" },
     { title: "Số điện thoại", dataIndex: "phone", key: "phone" },
-    {
-      title: "Giờ mở cửa",
-      dataIndex: "opening_hours",
-      key: "opening_hours",
-    },
+    { title: "Giờ mở cửa", dataIndex: "opening_hours", key: "opening_hours" },
     {
       title: "Hành động",
       key: "actions",
       render: (text, record) => (
-        <Button
-          className="pink-button"
-          icon={<EditOutlined />}
-          onClick={() => showModal(record)}
-        >
-          Sửa
-        </Button>
+        <div className="action-buttons">
+          <Button
+            className="pink-button"
+            icon={<EditOutlined />}
+            onClick={() => showModal(record)}
+          >
+            Sửa
+          </Button>
+          <Button
+            className="pink-button"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteRestaurant(record.id)}
+          >
+            Xóa
+          </Button>
+        </div>
       ),
     },
   ];

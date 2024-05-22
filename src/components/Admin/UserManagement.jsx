@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Table, Button, Modal, Form, Input, Select } from "antd";
-import { PlusOutlined, EditOutlined } from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { users } from "../../data/fakeData";
 import "../../styles/styles.css";
 
@@ -20,6 +20,10 @@ const UserManagement = () => {
       setUserData([...userData, { ...values, id: userData.length + 1 }]);
     }
     setIsModalVisible(false);
+  };
+
+  const handleDeleteUser = (id) => {
+    setUserData(userData.filter((user) => user.id !== id));
   };
 
   const showModal = (user) => {
@@ -42,13 +46,22 @@ const UserManagement = () => {
       title: "Hành động",
       key: "actions",
       render: (text, record) => (
-        <Button
-          className="pink-button"
-          icon={<EditOutlined />}
-          onClick={() => showModal(record)}
-        >
-          Sửa
-        </Button>
+        <div className="action-buttons">
+          <Button
+            className="pink-button"
+            icon={<EditOutlined />}
+            onClick={() => showModal(record)}
+          >
+            Sửa
+          </Button>
+          <Button
+            className="pink-button"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteUser(record.id)}
+          >
+            Xóa
+          </Button>
+        </div>
       ),
     },
   ];

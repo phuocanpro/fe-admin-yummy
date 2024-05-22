@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Table, Button, Modal, Form, Input, Select } from "antd";
-import { PlusOutlined, EditOutlined } from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { dishes, restaurants } from "../../data/fakeData";
 import "../../styles/styles.css";
 
@@ -20,6 +20,10 @@ const MenuManagement = () => {
       setDishData([...dishData, { ...values, id: dishData.length + 1 }]);
     }
     setIsModalVisible(false);
+  };
+
+  const handleDeleteDish = (id) => {
+    setDishData(dishData.filter((dish) => dish.id !== id));
   };
 
   const showModal = (dish) => {
@@ -47,13 +51,22 @@ const MenuManagement = () => {
       title: "Hành động",
       key: "actions",
       render: (text, record) => (
-        <Button
-          className="pink-button"
-          icon={<EditOutlined />}
-          onClick={() => showModal(record)}
-        >
-          Sửa
-        </Button>
+        <div className="action-buttons">
+          <Button
+            className="pink-button"
+            icon={<EditOutlined />}
+            onClick={() => showModal(record)}
+          >
+            Sửa
+          </Button>
+          <Button
+            className="pink-button"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteDish(record.id)}
+          >
+            Xóa
+          </Button>
+        </div>
       ),
     },
   ];

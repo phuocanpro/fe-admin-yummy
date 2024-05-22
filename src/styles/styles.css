@@ -142,19 +142,43 @@ h2 {
 .dashboard-header {
   background-color: #6492dd;
   padding: 20px;
-  text-align: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.header-left h2 {
+  margin: 0;
 }
 
 .header-icon {
-  width: 100px;
-  height: 120px;
+  width: 100px; /* Adjusted size */
+  height: 100px; /* Adjusted size */
   margin-right: 10px;
-  display: inline-block;
-  vertical-align: middle;
+}
+
+.logout-button {
+  background-color: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.logout-icon {
+  width: 50px;
+  height: 50px;
+  margin-right: 5px;
 }
 
 .dashboard-content {
@@ -196,8 +220,8 @@ h2 {
 
 .sidebar-icon {
   margin-right: 10px;
-  width: 50px; /* Increased size */
-  height: 50px; /* Increased size */
+  width: 48px;
+  height: 48px;
 }
 
 .content {
@@ -240,4 +264,57 @@ h2 {
     width: 100%;
     max-width: 100%;
   }
+}
+
+/* Styles for logout modal */
+.logout-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.logout-modal {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.logout-modal h3 {
+  margin-top: 0;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.modal-buttons button {
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+}
+
+.modal-buttons button:first-child {
+  background: #ccc;
+}
+
+.modal-buttons button:last-child {
+  background: #ff4e4e;
+  color: white;
+}
+.action-buttons {
+  display: flex;
+  gap: 8px; /* Khoảng cách giữa các nút */
 }
