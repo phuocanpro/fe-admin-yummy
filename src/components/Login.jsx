@@ -1,21 +1,42 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form, Input, Button, Checkbox, Select } from "antd";
 import "../styles/styles.css";
+import UserAPI from "../API/UserAPI";
 
 const { Option } = Select;
 
 const Login = () => {
   const navigate = useNavigate();
 
+  const [error, setError] = useState("");
+
   const onFinish = (values) => {
     const { email, password, role, remember } = values;
-    // Kiểm tra xác thực người dùng ở đây
-    if (role === "admin") {
-      navigate("/admin-dashboard");
-    } else if (role === "restaurant") {
-      navigate("/owner-dashboard");
+
+    const fetchData = async () => {
+      const response = await UserAPI.Login(values)
+        .then((res) => res)
+
+      if (response.status === "error") {
+        if (response.message === "Enter missing information") {
+          setError("Vui lòng nhập đủ thông tin");
+        } else if (response.message === "Email not exist") {
+          setError("Email sai");
+        } else if (response.message === "Wrong password") {
+          setError("Mật khẩu sai");
+        }
+      } else {
+        if (response.user.role === "admin") {
+          navigate("/admin-dashboard");
+        } else if (role === "restaurant") {
+          navigate("/owner-dashboard");
+        }
+      }
     }
+
+
+    fetchData()
   };
 
   return (
@@ -49,15 +70,9 @@ const Login = () => {
             >
               <Input.Password placeholder="Password" />
             </Form.Item>
-            <Form.Item
-              name="role"
-              rules={[{ required: true, message: "Please select your Role!" }]}
-            >
-              <Select placeholder="Select a role">
-                <Option value="admin">Admin</Option>
-                <Option value="restaurant">Restaurant Owner</Option>
-              </Select>
-            </Form.Item>
+            {error && (
+              <span style={{ color: "red" }}>{error}</span>
+            )}
             <Form.Item name="remember" valuePropName="checked" noStyle>
               <Checkbox>Remember me</Checkbox>
             </Form.Item>

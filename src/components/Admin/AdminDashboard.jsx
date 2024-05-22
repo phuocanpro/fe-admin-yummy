@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import UserManagement from "./UserManagement";
 import RestaurantManagement from "./RestaurantManagement";
-import DishManagement from "./DishManagement";
+import DishManagement from "./OrderAllManagement";
 import "../../styles/styles.css";
 import AdminIcon from "../../assets/images/admin-icon.png";
 import userIcon from "../../assets/images/user-icon.png";
 import restaurantIcon from "../../assets/images/restaurant-icon.png";
 import dishIcon from "../../assets/images/dish-icon.png";
+import OrderAllManagement from "./OrderAllManagement";
 
 const AdminDashboard = () => {
   const [activeComponent, setActiveComponent] = useState("UserManagement");
@@ -17,8 +18,8 @@ const AdminDashboard = () => {
         return <UserManagement />;
       case "RestaurantManagement":
         return <RestaurantManagement />;
-      case "DishManagement":
-        return <DishManagement />;
+      case "OrderAllManagement":
+        return <OrderAllManagement />;
       default:
         return <UserManagement />;
     }
@@ -32,6 +33,10 @@ const AdminDashboard = () => {
       </header>
       <div className="dashboard-content">
         <div className="sidebar">
+        <button onClick={() => setActiveComponent("OrderAllManagement")}>
+            <img src={dishIcon} alt="Dish Icon" className="sidebar-icon" /> Quản
+            lý đơn hàng
+          </button>
           <button onClick={() => setActiveComponent("UserManagement")}>
             <img src={userIcon} alt="User Icon" className="sidebar-icon" /> Quản
             lý người dùng
@@ -43,10 +48,6 @@ const AdminDashboard = () => {
               className="sidebar-icon"
             />{" "}
             Quản lý nhà hàng
-          </button>
-          <button onClick={() => setActiveComponent("DishManagement")}>
-            <img src={dishIcon} alt="Dish Icon" className="sidebar-icon" /> Quản
-            lý món ăn
           </button>
         </div>
         <div className="content">{renderComponent()}</div>

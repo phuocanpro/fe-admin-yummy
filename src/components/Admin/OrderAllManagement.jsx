@@ -4,7 +4,7 @@ import { orders, users, restaurants } from "../../data/fakeData";
 import "../../styles/styles.css";
 import { PlusOutlined, EditOutlined } from "@ant-design/icons";
 
-const OrderManagement = () => {
+const OrderAllManagement = () => {
   const [orderData, setOrderData] = useState(orders);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentOrder, setCurrentOrder] = useState(null);
@@ -123,4 +123,4 @@ const OrderManagement = () => {
   );
 };
 
-export default OrderManagement;
+export default OrderAllManagement;
