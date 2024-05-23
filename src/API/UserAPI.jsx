@@ -3,17 +3,22 @@ import axiosClient from "./axiosClient";
 
 const UserAPI = {
   Get_All_User: () => {
-    const url = "/api/getAll";
+    const url = "/api/user/getAll";
     return axiosClient.get(url);
   },
 
   Get_User: (id) => {
-    const url = `/api/getUser/${id}`;
+    const url = `/api/user/getUser/${id}`;
+    return axiosClient.get(url);
+  },
+
+  Search: (input) => {
+    const url = `/api/user/search/${input}`;
     return axiosClient.get(url);
   },
 
   Put_User: (data) => {
-    const url = `/api/update`;
+    const url = `/api/user/update`;
     return axiosClient.put(url, data);
   },
 
@@ -23,18 +28,13 @@ const UserAPI = {
     return axiosClient.post(url, data);
   },
 
-  Get_Detail_User: (query) => {
-    const url = `/api/login${query}`;
-    return axiosClient.get(url);
-  },
-
   Register: (data) => {
     const url = "/api/register";
     return axiosClient.post(url, data);
   },
 
   Delete: (id) => {
-    const url = `/api/delete/${id}`;
+    const url = `/api/user/delete/${id}`;
     return axiosClient.delete(url);
   },
 };

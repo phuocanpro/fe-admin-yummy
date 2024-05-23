@@ -27,9 +27,10 @@ const Login = () => {
           setError("Mật khẩu sai");
         }
       } else {
+        localStorage.setItem('userId', response.user.id);
         if (response.user.role === "admin") {
           navigate("/admin-dashboard");
-        } else if (role === "restaurant") {
+        } else if (response.user.role === "restaurant") {
           navigate("/owner-dashboard");
         }
       }

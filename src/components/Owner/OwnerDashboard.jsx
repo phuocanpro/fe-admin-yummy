@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import MenuManagement from "./MenuManagement";
+import DishManagement from "./DishManagement";
 import OrderManagement from "./OrderManagement";
 import ReviewManagement from "./ReviewManagement";
+import InforManagement from "./InforManagement";
 import "../../styles/styles.css";
 import restaurantIcon from "../../assets/images/restaurant-icon.png";
 import menuIcon from "../../assets/images/menu-icon.png";
@@ -17,14 +18,16 @@ const OwnerDashboard = () => {
 
   const renderComponent = () => {
     switch (activeComponent) {
-      case "MenuManagement":
-        return <MenuManagement />;
+      case "DishManagement":
+        return <DishManagement />;
       case "OrderManagement":
         return <OrderManagement />;
       case "ReviewManagement":
         return <ReviewManagement />;
+        case "InforManagement":
+          return <InforManagement />;
       default:
-        return <MenuManagement />;
+        return <DishManagement />;
     }
   };
 
@@ -55,17 +58,21 @@ const OwnerDashboard = () => {
       </header>
       <div className="dashboard-content">
         <div className="sidebar">
-          <button onClick={() => setActiveComponent("MenuManagement")}>
-            <img src={menuIcon} alt="Menu Icon" className="sidebar-icon" /> Menu
-            Management
+          <button onClick={() => setActiveComponent("DishManagement")}>
+            <img src={menuIcon} alt="Menu Icon" className="sidebar-icon" /> 
+            Quản lý món ăn
           </button>
           <button onClick={() => setActiveComponent("OrderManagement")}>
             <img src={orderIcon} alt="Order Icon" className="sidebar-icon" />{" "}
-            Order Management
+            Quản lý đơn hàng
           </button>
           <button onClick={() => setActiveComponent("ReviewManagement")}>
             <img src={reviewIcon} alt="Review Icon" className="sidebar-icon" />{" "}
-            Review Management
+            Quản lý đánh giá
+          </button>
+          <button onClick={() => setActiveComponent("InforManagement")}>
+            <img src={reviewIcon} alt="Review Icon" className="sidebar-icon" />{" "}
+            Quản lý thông tin
           </button>
         </div>
         <div className="content">{renderComponent()}</div>
