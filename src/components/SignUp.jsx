@@ -3,33 +3,38 @@ import { useNavigate } from "react-router-dom";
 import { Form, Input, Button, Select } from "antd";
 import "../styles/styles.css";
 import UserAPI from "../API/UserAPI";
+import googleLogo from "../assets/images/googleLogo.png";
 
 const { Option } = Select;
 
 const SignUp = () => {
   const navigate = useNavigate();
-
   const [error, setError] = useState("");
 
   const onFinish = (values) => {
     const { name, email, password, phone, role } = values;
-    
+
     const fetchData = async () => {
-      const response = await UserAPI.Register(values)
-        .then((res) => res)
+      const response = await UserAPI.Register(values).then((res) => res);
 
       if (response.status === "error") {
         if (response.message === "Enter missing information") {
           setError("Vui lòng nhập đủ thông tin");
         } else if (response.message === "Email exist") {
           setError("Email đã được đăng ký");
-        } 
+        }
       } else {
-        navigate("/login");
+        if (role === "restaurant") {
+          navigate("/register-restaurant");
+        } else {
+          navigate("/login");
+        }
       }
-    }
+    };
     fetchData();
   };
+
+  const handleGoogleSignUp = () => {};
 
   return (
     <div>
@@ -43,9 +48,7 @@ const SignUp = () => {
           >
             <Form.Item
               name="name"
-              rules={[
-                { required: true, message: "Vui lòng nhập tên!" },
-              ]}
+              rules={[{ required: true, message: "Vui lòng nhập tên!" }]}
             >
               <Input placeholder="Tên" />
             </Form.Item>
@@ -57,9 +60,7 @@ const SignUp = () => {
             </Form.Item>
             <Form.Item
               name="password"
-              rules={[
-                { required: true, message: "Vui lòng nhập mật khẩu!" },
-              ]}
+              rules={[{ required: true, message: "Vui lòng nhập mật khẩu!" }]}
             >
               <Input.Password placeholder="Mật khẩu" />
             </Form.Item>
@@ -80,15 +81,22 @@ const SignUp = () => {
                 <Option value="restaurant">Quán ăn</Option>
               </Select>
             </Form.Item>
-            {error && (
-              <span style={{ color: "red" }}>{error}</span>
-            )}
+            {error && <span style={{ color: "red" }}>{error}</span>}
             <Form.Item>
               <Button className="pink-button" type="primary" htmlType="submit">
                 Sign Up
               </Button>
             </Form.Item>
           </Form>
+          <div className="google-login-container">
+            <button
+              className="google-login-button"
+              onClick={handleGoogleSignUp}
+            >
+              <img src={googleLogo} alt="Google logo" className="google-logo" />
+              Đăng nhập với Google
+            </button>
+          </div>
         </div>
         <div className="image-section">
           <h2>Chào mừng đến với Đăng ký</h2>

@@ -1,15 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form, Input, Select, Upload } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { dishes, restaurants } from "../../data/fakeData";
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Select,
+  Upload,
+  DatePicker,
+  Row,
+  Col,
+} from "antd";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import { dishes } from "../../data/fakeData";
 import DishAPI from "../../API/DishAPI";
 import "../../styles/styles.css";
 import RestaurantAPI from "../../API/RestaurantAPI";
 import { getBase64 } from "./util";
+import moment from "moment";
 
 const { Option } = Select;
-const DishManagement = () => {
+const { RangePicker } = DatePicker;
 
+const DishManagement = () => {
   const [form] = Form.useForm();
   const [dishData, setDishData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -22,11 +40,11 @@ const DishManagement = () => {
     rate: "",
     type: "",
   });
-
   const [rowSelected, setRowSelected] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [dates, setDates] = useState([]);
 
   const getAllDishes = async () => {
     const res = DishAPI.Get_All();
@@ -37,14 +55,6 @@ const DishManagement = () => {
     const fetchData = async () => {
       try {
         const data = await getAllDishes();
-        // const modifiedData = [];
-        // for (const dish of data) {
-        //   const res = await RestaurantAPI.Get_Item(dish.restaurant_id);
-        //   modifiedData.push({
-        //     ...dish,
-        //     restaurant_name: res?.name,
-        //   });
-        // }
         setDishData(data);
       } catch (error) {
         console.log("err", error);
@@ -70,14 +80,12 @@ const DishManagement = () => {
   };
 
   useEffect(() => {
-    console.log("row", rowSelected);
     if (rowSelected && isModalVisible) {
       fetchGetDetailsDish(rowSelected);
     }
   }, [rowSelected, isModalVisible]);
 
   useEffect(() => {
-    console.log("state", stateDetails);
     form.setFieldsValue(stateDetails);
   }, [form, stateDetails, rowSelected]);
 
@@ -85,25 +93,18 @@ const DishManagement = () => {
     if (rowSelected) {
       const res = await DishAPI.Put(stateDetails);
       if (res.status === "SUCCESS") {
-        // message.success("Success");
         handleCancel();
-      } else {
-        // message.error("Error");
       }
     } else {
-      const idUser = localStorage.getItem('userId');
-      const restaurant = await RestaurantAPI.SearchColumn("user_id",idUser);
+      const idUser = localStorage.getItem("userId");
+      const restaurant = await RestaurantAPI.SearchColumn("user_id", idUser);
       setStateDetails({
         ...stateDetails,
         restaurant_id: restaurant[0].id,
       });
       const res = await DishAPI.Create(stateDetails);
-
       if (res.status === "SUCCESS") {
-        // message.success("Success");
         handleCancel();
-      } else {
-        // message.error("Error");
       }
     }
   };
@@ -111,13 +112,9 @@ const DishManagement = () => {
   const handleDeleteDish = async () => {
     const res = await RestaurantAPI.Delete(rowSelected);
     if (res.status === "SUCCESS") {
-      // message.success("Success");
       handleCancel();
-    } else {
-      // message.error("Error");
     }
   };
-
 
   const handleOnchangeSearch = (e) => {
     setSearchValue(e.target.value);
@@ -151,6 +148,21 @@ const DishManagement = () => {
     }
   }, [searchValue]);
 
+  const handleDateChange = (dates) => {
+    setDates(dates);
+  };
+
+  const handleSearchByDate = () => {
+    if (dates.length === 2) {
+      const [start, end] = dates;
+      const filtered = dishData.filter((dish) => {
+        const createdAt = moment(dish.createdAt);
+        return createdAt.isBetween(start, end, "days", "[]");
+      });
+      setDishData(filtered);
+    }
+  };
+
   const handleCancel = () => {
     setIsModalVisible(false);
     setStateDetails({
@@ -166,13 +178,6 @@ const DishManagement = () => {
     setRowSelected("");
   };
 
-  // const handleOnchangeDetails = (e) => {
-  //   setStateDetails({
-  //     ...stateDetails,
-  //     [e.target.name]: e.target.value,
-  //   });
-  // };
-
   const handleOnchangeDetails = (name, value) => {
     setStateDetails({
       ...stateDetails,
@@ -185,8 +190,6 @@ const DishManagement = () => {
     if (!file.url && !file.preview) {
       file.preview = await getBase64(file.originFileObj);
     }
-
-    console.log("file", file.preview);
     setStateDetails({
       ...stateDetails,
       img: file.preview,
@@ -224,66 +227,98 @@ const DishManagement = () => {
 
   return (
     <div className="owner-container">
-      <div className="button-container">
-        <Button
-          className="pink-button"
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={showModal}
-        >
-          Thêm món
-        </Button>
-        {/* <Select placeholder="Chọn vai trò">
-                <Option value="1">1</Option>
-                <Option value="2">2</Option>
-              </Select> */}
-
-        <Input
-          type="text"
-          placeholder="Nhập từ khóa tìm kiếm"
-          value={searchValue}
-          onChange={handleOnchangeSearch}
-        />
-        {loading ? (
-          <div>Đang tìm kiếm...</div>
-        ) : (
-          <div>{error}</div>
-        )}
-
-      </div>
-      <Table dataSource={dishData} columns={columns} rowKey="id" onRow={(record, rowIndex) => {
-        return {
-          onClick: (event) => {
-            setRowSelected(record.id);
-          },
-        };
-      }} />
+      <Row className="button-container" gutter={[16, 16]}>
+        <Col>
+          <Button
+            className="pink-button"
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={showModal}
+          >
+            Thêm món
+          </Button>
+        </Col>
+        <Col>
+          <Input
+            type="text"
+            placeholder="Nhập từ khóa tìm kiếm"
+            value={searchValue}
+            onChange={handleOnchangeSearch}
+          />
+        </Col>
+        <Col>
+          <DatePicker
+            placeholder="Từ ngày"
+            onChange={(date) => handleDateChange([date, dates[1]])}
+          />
+        </Col>
+        <Col>
+          <DatePicker
+            placeholder="Đến ngày"
+            onChange={(date) => handleDateChange([dates[0], date])}
+          />
+        </Col>
+        <Col>
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={handleSearchByDate}
+          >
+            Tìm kiếm
+          </Button>
+        </Col>
+      </Row>
+      {loading ? <div>Đang tìm kiếm...</div> : <div>{error}</div>}
+      <Table
+        dataSource={dishData}
+        columns={columns}
+        rowKey="id"
+        onRow={(record, rowIndex) => {
+          return {
+            onClick: (event) => {
+              setRowSelected(record.id);
+            },
+          };
+        }}
+      />
       <Modal
         title={rowSelected ? "Sửa món" : "Thêm món"}
         visible={isModalVisible}
         onCancel={handleCancel}
         footer={null}
       >
-        <Form initialValues={{ remember: true }} onFinish={handleAddOrUpdateDish} form={form}>
+        <Form
+          initialValues={{ remember: true }}
+          onFinish={handleAddOrUpdateDish}
+          form={form}
+        >
           <Form.Item name="name" label="Tên món" rules={[{ required: true }]}>
-            <Input value={stateDetails.name}
+            <Input
+              value={stateDetails.name}
               onChange={(e) => handleOnchangeDetails("name", e.target.value)}
-              name="name" />
+              name="name"
+            />
           </Form.Item>
           <Form.Item name="price" label="Giá" rules={[{ required: true }]}>
-            <Input value={stateDetails.price}
+            <Input
+              value={stateDetails.price}
               onChange={(e) => handleOnchangeDetails("price", e.target.value)}
-              name="price" />
+              name="price"
+            />
           </Form.Item>
           <Form.Item name="rate" label="Đánh giá" rules={[{ required: true }]}>
-            <Input value={stateDetails.rate}
+            <Input
+              value={stateDetails.rate}
               onChange={(e) => handleOnchangeDetails("rate", e.target.value)}
-              name="rate" />
+              name="rate"
+            />
           </Form.Item>
           <Form.Item name="type" label="Loại" rules={[{ required: true }]}>
-            <Select value={stateDetails.type}
+            <Select
+              value={stateDetails.type}
               onChange={(value) => handleOnchangeDetails("type", value)}
-              name="type" >
+              name="type"
+            >
               <Select.Option value="Món chính">Món chính</Select.Option>
               <Select.Option value="Món thêm">Món thêm</Select.Option>
               <Select.Option value="Đồ uống">Đồ uống</Select.Option>

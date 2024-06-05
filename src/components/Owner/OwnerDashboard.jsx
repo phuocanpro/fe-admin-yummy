@@ -10,6 +10,7 @@ import menuIcon from "../../assets/images/menu-icon.png";
 import orderIcon from "../../assets/images/order-icon.png";
 import reviewIcon from "../../assets/images/review-icon.png";
 import logoutIcon from "../../assets/images/logout-icon.png";
+import infoIcon from "../../assets/images/info-icon.png";
 
 const OwnerDashboard = () => {
   const [activeComponent, setActiveComponent] = useState("MenuManagement");
@@ -24,8 +25,8 @@ const OwnerDashboard = () => {
         return <OrderManagement />;
       case "ReviewManagement":
         return <ReviewManagement />;
-        case "InforManagement":
-          return <InforManagement />;
+      case "InforManagement":
+        return <InforManagement />;
       default:
         return <DishManagement />;
     }
@@ -59,7 +60,7 @@ const OwnerDashboard = () => {
       <div className="dashboard-content">
         <div className="sidebar">
           <button onClick={() => setActiveComponent("DishManagement")}>
-            <img src={menuIcon} alt="Menu Icon" className="sidebar-icon" /> 
+            <img src={menuIcon} alt="Menu Icon" className="sidebar-icon" />
             Quản lý món ăn
           </button>
           <button onClick={() => setActiveComponent("OrderManagement")}>
@@ -71,8 +72,8 @@ const OwnerDashboard = () => {
             Quản lý đánh giá
           </button>
           <button onClick={() => setActiveComponent("InforManagement")}>
-            <img src={reviewIcon} alt="Review Icon" className="sidebar-icon" />{" "}
-            Quản lý thông tin
+            <img src={infoIcon} alt="Info Icon" className="sidebar-icon" /> Quản
+            lý thông tin
           </button>
         </div>
         <div className="content">{renderComponent()}</div>

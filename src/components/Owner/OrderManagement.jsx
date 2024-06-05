@@ -1,13 +1,23 @@
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input } from "antd";
+import { Table, Button, Modal, Form, Input, DatePicker, Row, Col } from "antd";
 import { orders, users, restaurants } from "../../data/fakeData";
 import "../../styles/styles.css";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import moment from "moment";
+
+const { RangePicker } = DatePicker;
 
 const OrderManagement = () => {
   const [orderData, setOrderData] = useState(orders);
+  const [filteredData, setFilteredData] = useState(orders);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentOrder, setCurrentOrder] = useState(null);
+  const [dates, setDates] = useState([]);
 
   const handleAddOrUpdateOrder = (values) => {
     if (currentOrder) {
@@ -19,11 +29,13 @@ const OrderManagement = () => {
     } else {
       setOrderData([...orderData, { ...values, id: orderData.length + 1 }]);
     }
+    setFilteredData(orderData);
     setIsModalVisible(false);
   };
 
   const handleDeleteOrder = (id) => {
     setOrderData(orderData.filter((order) => order.id !== id));
+    setFilteredData(orderData.filter((order) => order.id !== id));
   };
 
   const showModal = (order) => {
@@ -34,6 +46,21 @@ const OrderManagement = () => {
   const handleCancel = () => {
     setIsModalVisible(false);
     setCurrentOrder(null);
+  };
+
+  const handleDateChange = (dates) => {
+    setDates(dates);
+  };
+
+  const handleSearchByDate = () => {
+    if (dates.length === 2) {
+      const [start, end] = dates;
+      const filtered = orderData.filter((order) => {
+        const createdAt = moment(order.createdAt);
+        return createdAt.isBetween(start, end, "days", "[]");
+      });
+      setFilteredData(filtered);
+    }
   };
 
   const columns = [
@@ -78,17 +105,40 @@ const OrderManagement = () => {
 
   return (
     <div className="owner-container">
-      <div className="button-container">
-        <Button
-          className="pink-button"
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => showModal(null)}
-        >
-          Thêm đơn hàng
-        </Button>
-      </div>
-      <Table dataSource={orderData} columns={columns} rowKey="id" />
+      <Row className="button-container" gutter={[16, 16]}>
+        <Col>
+          <Button
+            className="pink-button"
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => showModal(null)}
+          >
+            Thêm đơn hàng
+          </Button>
+        </Col>
+        <Col>
+          <DatePicker
+            placeholder="Từ ngày"
+            onChange={(date) => handleDateChange([date, dates[1]])}
+          />
+        </Col>
+        <Col>
+          <DatePicker
+            placeholder="Đến ngày"
+            onChange={(date) => handleDateChange([dates[0], date])}
+          />
+        </Col>
+        <Col>
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={handleSearchByDate}
+          >
+            Tìm kiếm
+          </Button>
+        </Col>
+      </Row>
+      <Table dataSource={filteredData} columns={columns} rowKey="id" />
       <Modal
         title={currentOrder ? "Sửa đơn hàng" : "Thêm đơn hàng"}
         visible={isModalVisible}

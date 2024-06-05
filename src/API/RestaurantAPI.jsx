@@ -17,7 +17,7 @@ const RestaurantAPI = {
     return axiosClient.get(url);
   },
 
-  SearchColumn: (label,input) => {
+  SearchColumn: (label, input) => {
     const url = `/api/restaurant/searchColumn/${label}/${input}`;
     return axiosClient.get(url);
   },

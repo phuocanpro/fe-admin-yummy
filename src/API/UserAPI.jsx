@@ -1,4 +1,3 @@
-import axios from "axios";
 import axiosClient from "./axiosClient";
 
 const UserAPI = {
@@ -24,7 +23,6 @@ const UserAPI = {
 
   Login: async (data) => {
     const url = "/api/login";
-    // console.log('called')
     return axiosClient.post(url, data);
   },
 
@@ -36,6 +34,11 @@ const UserAPI = {
   Delete: (id) => {
     const url = `/api/user/delete/${id}`;
     return axiosClient.delete(url);
+  },
+
+  ForgotPassword: (data) => {
+    const url = "/api/user/forgot-password";
+    return axiosClient.post(url, data);
   },
 };
 

@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form, Input, Select } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Table, Button, Modal, Form, Input, DatePicker, Row, Col } from "antd";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import { users } from "../../data/fakeData";
 import "../../styles/styles.css";
 import UserAPI from "../../API/UserAPI";
-import { useNavigate } from "react-router-dom";
-import Search from "antd/es/input/Search";
+import moment from "moment";
+
+const { RangePicker } = DatePicker;
 
 const UserManagement = () => {
-
   const [form] = Form.useForm();
   const [userData, setUserData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [stateUserDetails, setStateUserDetails] = useState({
     id: "",
@@ -26,6 +32,7 @@ const UserManagement = () => {
   const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [dates, setDates] = useState([]);
 
   const getAllUsers = async () => {
     const res = UserAPI.Get_All_User();
@@ -37,6 +44,7 @@ const UserManagement = () => {
       try {
         const usersData = await getAllUsers();
         setUserData(Array.from(usersData));
+        setFilteredData(Array.from(usersData));
       } catch (error) {
         // Handle error
         console.log("err", error);
@@ -55,16 +63,12 @@ const UserManagement = () => {
     }
   }, [rowSelected, isModalVisible]);
 
-
   useEffect(() => {
     form.setFieldsValue(stateUserDetails);
-    console.log("detail", stateUserDetails);
-    console.log("rowSelected", rowSelected);
   }, [form, stateUserDetails, rowSelected]);
 
   const fetchGetDetailsUser = async (rowSelected) => {
     const response = await UserAPI.Get_User(rowSelected);
-    console.log("res",response);
     setStateUserDetails({
       id: response?.id,
       name: response?.name,
@@ -77,36 +81,22 @@ const UserManagement = () => {
       coin: response?.coin,
     });
   };
-  // const onCreateUser = async (value) => {
-  //   const res = await UserAPI.Register(value);
-  //   if (res.status === "SUCCESS") {
-  //     // message.success("Success");
-  //     setIsModalVisible(false);
-  //     setCurrentUser(null);
-  //   } else {
-  //     // message.error("Error");
-  //   }
-  // };
-
 
   const handleAddOrUpdateUser = async () => {
-      const res = await UserAPI.Put_User(stateUserDetails);
+    const res = await UserAPI.Put_User(stateUserDetails);
     if (res.status === "SUCCESS") {
-      // message.success("Success");
       handleCancel();
     } else {
-      // message.error("Error");
+      // handle error
     }
-    
   };
 
   const handleDeleteUser = async () => {
     const res = await UserAPI.Delete(rowSelected);
     if (res.status === "SUCCESS") {
-      // message.success("Success");
       handleCancel();
     } else {
-      // message.error("Error");
+      // handle error
     }
   };
 
@@ -114,7 +104,24 @@ const UserManagement = () => {
     setSearchValue(e.target.value);
   };
 
-    useEffect(() => {
+  const handleDateChange = (dates) => {
+    setDates(dates);
+  };
+
+  const handleSearchByDate = () => {
+    if (dates.length === 2) {
+      const [start, end] = dates;
+      const filtered = userData.filter((user) => {
+        const createdAt = moment(user.createdAt);
+        return createdAt.isBetween(start, end, "days", "[]");
+      });
+      setFilteredData(filtered);
+    } else {
+      setFilteredData(userData);
+    }
+  };
+
+  useEffect(() => {
     const handleSearch = async () => {
       try {
         setLoading(true);
@@ -142,7 +149,6 @@ const UserManagement = () => {
     }
   }, [searchValue]);
 
-
   const handleCancel = () => {
     setIsModalVisible(false);
     setStateUserDetails({
@@ -166,9 +172,8 @@ const UserManagement = () => {
     });
   };
 
-
   const columns = [
-    { title: "Tên", dataIndex: "name", key: "name"},
+    { title: "Tên", dataIndex: "name", key: "name" },
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Số điện thoại", dataIndex: "phone", key: "phone" },
     { title: "Địa chỉ", dataIndex: "address", key: "address" },
@@ -201,102 +206,132 @@ const UserManagement = () => {
 
   return (
     <div className="owner-container">
-      {/* <div className="button-container">
-        <Button
-          className="pink-button"
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setIsModalVisible(true)}
-        >
-          Thêm người dùng
-        </Button>
-      </div> */}
-        <Input
-        type="text"
-        placeholder="Nhập từ khóa tìm kiếm"
-        value={searchValue}
-        onChange={handleOnchangeSearch}
-      />
-      {loading ? (
-        <div>Đang tìm kiếm...</div>
-      ) : (
-        <div>{error}</div>
-      )}
+      <Row className="button-container" gutter={[16, 16]}>
+        <Col>
+          <Button
+            className="pink-button"
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setIsModalVisible(true)}
+          >
+            Thêm người dùng
+          </Button>
+        </Col>
+        <Col>
+          <Input
+            type="text"
+            placeholder="Nhập từ khóa tìm kiếm"
+            value={searchValue}
+            onChange={handleOnchangeSearch}
+          />
+        </Col>
+        <Col>
+          <DatePicker
+            placeholder="Từ ngày"
+            onChange={(date) => handleDateChange([date, dates[1]])}
+          />
+        </Col>
+        <Col>
+          <DatePicker
+            placeholder="Đến ngày"
+            onChange={(date) => handleDateChange([dates[0], date])}
+          />
+        </Col>
+        <Col>
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={handleSearchByDate}
+          >
+            Tìm kiếm
+          </Button>
+        </Col>
+      </Row>
+      {loading ? <div>Đang tìm kiếm...</div> : <div>{error}</div>}
       <br />
-      <Table dataSource={userData} columns={columns} rowKey="id" onRow={(record, rowIndex) => {
-            return {
-              onClick: (event) => {
-                setRowSelected(record.id);
-              },
-            };
-          }} />
+      <Table
+        dataSource={filteredData}
+        columns={columns}
+        rowKey="id"
+        onRow={(record, rowIndex) => {
+          return {
+            onClick: (event) => {
+              setRowSelected(record.id);
+            },
+          };
+        }}
+      />
       <Modal
         title={rowSelected ? "Sửa người dùng" : "Thêm người dùng"}
         visible={isModalVisible}
         onCancel={handleCancel}
         footer={null}
       >
-        <Form initialValues={{ remember: true }} onFinish={handleAddOrUpdateUser}  form={form}>
+        <Form
+          initialValues={{ remember: true }}
+          onFinish={handleAddOrUpdateUser}
+          form={form}
+        >
           <Form.Item name="name" label="Tên" rules={[{ required: true }]}>
-            <Input 
+            <Input
               value={stateUserDetails.name}
               onChange={handleOnchangeDetails}
-              name="name"/>
+              name="name"
+            />
           </Form.Item>
           <Form.Item
             name="email"
             label="Email"
             rules={[{ required: true, type: "email" }]}
           >
-            <Input value={stateUserDetails.email}
+            <Input
+              value={stateUserDetails.email}
               onChange={handleOnchangeDetails}
-              name="email"/>
+              name="email"
+            />
           </Form.Item>
           <Form.Item
             name="phone"
             label="Số điện thoại"
             rules={[{ required: true }]}
           >
-            <Input value={stateUserDetails.phone}
+            <Input
+              value={stateUserDetails.phone}
               onChange={handleOnchangeDetails}
-              name="phone"/>
+              name="phone"
+            />
           </Form.Item>
           <Form.Item
             name="address"
             label="Địa chỉ"
             rules={[{ required: true }]}
           >
-            <Input  value={stateUserDetails.address}
+            <Input
+              value={stateUserDetails.address}
               onChange={handleOnchangeDetails}
-              name="address" />
+              name="address"
+            />
           </Form.Item>
           <Form.Item name="role" label="Vai trò" rules={[{ required: true }]}>
-            {/* <Select>
-              <Select.Option value="admin">Quản trị viên</Select.Option>
-              <Select.Option value="user">Người dùng</Select.Option>
-              <Select.Option value="restaurant">Nhà hàng</Select.Option>
-            </Select> */}
-              <Input value={stateUserDetails.role}
+            <Input
+              value={stateUserDetails.role}
               onChange={handleOnchangeDetails}
-              name="role" />
+              name="role"
+            />
           </Form.Item>
-          <Form.Item
-            name="level"
-            label="Cấp độ"
-            rules={[{ required: true }]}
-          >
-            <Input  value={stateUserDetails.level}
+          <Form.Item name="level" label="Cấp độ" rules={[{ required: true }]}>
+            <Input
+              value={stateUserDetails.level}
               onChange={handleOnchangeDetails}
-              name="level" />
+              name="level"
+            />
           </Form.Item>
-          <Form.Item
-            name="coin"
-            label="Số xu"
-            rules={[{ required: true }]}
-          >
-            <Input  value={stateUserDetails.coin}
+          <Form.Item name="coin" label="Số xu" rules={[{ required: true }]}>
+            <Input
+              value={stateUserDetails.coin}
               onChange={handleOnchangeDetails}
-              name="coin" />
+              name="coin"
+            />
           </Form.Item>
           <Button className="pink-button" type="primary" htmlType="submit">
             {rowSelected ? "Cập nhật" : "Thêm"}

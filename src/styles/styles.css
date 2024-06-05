@@ -120,6 +120,7 @@ h2 {
 .ant-input-password input::placeholder,
 .ant-select-selection-placeholder {
   color: #bbb;
+  font-size: 16px;
 }
 
 .ant-select-selector {
@@ -220,8 +221,8 @@ h2 {
 
 .sidebar-icon {
   margin-right: 10px;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
 }
 
 .content {
@@ -316,5 +317,141 @@ h2 {
 }
 .action-buttons {
   display: flex;
-  gap: 8px; /* Khoảng cách giữa các nút */
+  gap: 8px;
+}
+
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.form-box {
+  background-color: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+}
+
+.form-title {
+  text-align: center;
+  color: #ff69b4;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.ant-input,
+.ant-picker,
+.ant-btn {
+  height: 50px;
+  font-size: 16px;
+}
+.ant-form-item-label > label {
+  font-size: 16px;
+}
+.ant-picker-range {
+  width: 100%;
+}
+
+.forgot-password-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100vh;
+}
+
+.forgot-password-box {
+  background-color: white;
+  padding: 60px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  width: 100%;
+}
+
+.forgot-password-title {
+  text-align: center;
+  color: #ff69b4;
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+.forgot-password-item {
+  width: 320px;
+  margin-bottom: 30px;
+}
+
+.forgot-password-input,
+.forgot-password-button {
+  height: 50px;
+  font-size: 16px;
+}
+
+.forgot-password-button {
+  background-color: #ff69b4;
+  border-color: #ff69b4;
+  color: white;
+  width: 100%;
+  font-size: 18px;
+}
+
+.forgot-password-button:hover {
+  background-color: #ff85c1;
+  border-color: #ff85c1;
+}
+
+.forgot-password-input::placeholder {
+  color: #bbb;
+}
+
+.forgot-password-label > label {
+  font-size: 16px;
+}
+
+.forgot-password-link {
+  font-size: 16px;
+  display: inline-block;
+  margin-bottom: 15px;
+}
+
+.forgot-password-link:hover {
+  color: #ff85c1;
+  text-decoration: underline;
+}
+
+.google-login-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.google-login-button {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  border: 1px solid #ff69b4; /* Màu viền */
+  border-radius: 5px;
+  background-color: white;
+  color: #555;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+  height: 50px;
+  justify-content: center;
+}
+
+.google-login-button:hover {
+  background-color: #f5f5f5;
+}
+
+.google-logo {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
 }
