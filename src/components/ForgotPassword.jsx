@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Form, Input, Button } from "antd";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/styles.css";
 import UserAPI from "../API/UserAPI";
 
 const ForgotPassword = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
 
   const onFinish = async (values) => {
     const { email } = values;
@@ -62,6 +64,10 @@ const ForgotPassword = () => {
             </Button>
           </Form.Item>
         </Form>
+        <div className="signup-link">
+          <span>Bạn chưa có tài khoản? </span>
+          <Link to="/signup">Đăng ký</Link>
+        </div>
       </div>
     </div>
   );

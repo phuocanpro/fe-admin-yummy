@@ -1,187 +1,165 @@
-import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input, DatePicker, Row, Col } from "antd";
-import { orders, users, restaurants } from "../../data/fakeData";
-import "../../styles/styles.css";
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import React, { useState, useEffect } from "react";
+import { Table, Button, DatePicker, Row, Col, Typography, Card } from "antd";
+import { orders, users, restaurants, orderItems } from "../../data/fakeData";
+import { CheckOutlined, SearchOutlined } from "@ant-design/icons";
 import moment from "moment";
+import "../../styles/styles.css";
 
 const { RangePicker } = DatePicker;
+const { Text } = Typography;
 
 const OrderManagement = () => {
-  const [orderData, setOrderData] = useState(orders);
-  const [filteredData, setFilteredData] = useState(orders);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentOrder, setCurrentOrder] = useState(null);
+  const [orderData, setOrderData] = useState(orderItems);
+  const [filteredData, setFilteredData] = useState(orderItems);
   const [dates, setDates] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const handleAddOrUpdateOrder = (values) => {
-    if (currentOrder) {
-      setOrderData(
-        orderData.map((order) =>
-          order.id === currentOrder.id ? { ...order, ...values } : order
-        )
-      );
-    } else {
-      setOrderData([...orderData, { ...values, id: orderData.length + 1 }]);
-    }
-    setFilteredData(orderData);
-    setIsModalVisible(false);
-  };
-
-  const handleDeleteOrder = (id) => {
-    setOrderData(orderData.filter((order) => order.id !== id));
-    setFilteredData(orderData.filter((order) => order.id !== id));
-  };
-
-  const showModal = (order) => {
-    setCurrentOrder(order);
-    setIsModalVisible(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setCurrentOrder(null);
-  };
+  useEffect(() => {
+    filterData();
+  }, [statusFilter, dates]);
 
   const handleDateChange = (dates) => {
     setDates(dates);
   };
 
   const handleSearchByDate = () => {
+    filterData();
+  };
+
+  const filterByStatus = (status) => {
+    setStatusFilter(status);
+  };
+
+  const filterData = () => {
+    let filtered = orderItems; // Ensure we start filtering from the original data
+
     if (dates.length === 2) {
       const [start, end] = dates;
-      const filtered = orderData.filter((order) => {
-        const createdAt = moment(order.createdAt);
+      filtered = filtered.filter((order) => {
+        const createdAt = moment(
+          orders.find((o) => o.id === order.order_id).createdAt
+        );
         return createdAt.isBetween(start, end, "days", "[]");
       });
-      setFilteredData(filtered);
     }
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((order) => order.status === statusFilter);
+    }
+
+    setFilteredData(filtered);
   };
 
   const columns = [
+    { title: "Order ID", dataIndex: "order_id", key: "order_id" },
+    { title: "Quantity", dataIndex: "quantity", key: "quantity" },
+    { title: "Options", dataIndex: "options", key: "options" },
+    { title: "Payment", dataIndex: "payment", key: "payment" },
     {
-      title: "Người dùng",
-      dataIndex: "user_id",
-      key: "user_id",
-      render: (id) => users.find((u) => u.id === id)?.name || "Không rõ",
+      title: "Tổng tiền",
+      dataIndex: "order_id",
+      key: "total_amount",
+      render: (order_id) =>
+        orders.find((o) => o.id === order_id)?.total_amount || "N/A",
     },
     {
-      title: "Nhà hàng",
-      dataIndex: "restaurant_id",
-      key: "restaurant_id",
-      render: (id) => restaurants.find((r) => r.id === id)?.name || "Không rõ",
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
     },
-    { title: "Giá", dataIndex: "price", key: "price" },
-    { title: "Phí vận chuyển", dataIndex: "ship", key: "ship" },
-    { title: "Tổng tiền", dataIndex: "total_amount", key: "total_amount" },
     {
       title: "Hành động",
       key: "actions",
       render: (text, record) => (
-        <div className="action-buttons">
-          <Button
-            className="pink-button"
-            icon={<EditOutlined />}
-            onClick={() => showModal(record)}
-          >
-            Sửa
-          </Button>
-          <Button
-            className="pink-button"
-            icon={<DeleteOutlined />}
-            onClick={() => handleDeleteOrder(record.id)}
-          >
-            Xóa
-          </Button>
-        </div>
+        <Button
+          className="confirm-button"
+          icon={<CheckOutlined />}
+          onClick={() => console.log("Xác nhận đơn hàng", record)}
+        >
+          Xác nhận
+        </Button>
       ),
     },
   ];
 
   return (
-    <div className="owner-container">
-      <Row className="button-container" gutter={[16, 16]}>
-        <Col>
-          <Button
-            className="pink-button"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => showModal(null)}
-          >
-            Thêm đơn hàng
-          </Button>
-        </Col>
-        <Col>
+    <div className="owner-container1">
+      <Row
+        className="date-container"
+        gutter={[16, 16]}
+        style={{ marginBottom: "24px" }}
+      >
+        <Col span={10}>
           <DatePicker
             placeholder="Từ ngày"
             onChange={(date) => handleDateChange([date, dates[1]])}
+            style={{ width: "100%" }}
           />
         </Col>
-        <Col>
+        <Col span={10}>
           <DatePicker
             placeholder="Đến ngày"
             onChange={(date) => handleDateChange([dates[0], date])}
+            style={{ width: "100%" }}
           />
         </Col>
-        <Col>
+        <Col span={4}>
           <Button
             type="primary"
             icon={<SearchOutlined />}
             onClick={handleSearchByDate}
+            style={{ width: "100%" }}
+            className="search-button"
           >
             Tìm kiếm
           </Button>
         </Col>
       </Row>
-      <Table dataSource={filteredData} columns={columns} rowKey="id" />
-      <Modal
-        title={currentOrder ? "Sửa đơn hàng" : "Thêm đơn hàng"}
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-      >
-        <Form initialValues={currentOrder} onFinish={handleAddOrUpdateOrder}>
-          <Form.Item
-            name="user_id"
-            label="Người dùng"
-            rules={[{ required: true }]}
+      <Row gutter={[16, 16]} style={{ marginBottom: "32px" }}>
+        <Col span={6}>
+          <Card className="status-card" onClick={() => filterByStatus("all")}>
+            <Text className="status-title">Tất cả</Text>
+            <Text className="status-count">{orderData.length} đơn hàng</Text>
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card
+            className="status-card"
+            onClick={() => filterByStatus("chưa giao")}
           >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="restaurant_id"
-            label="Nhà hàng"
-            rules={[{ required: true }]}
+            <Text className="status-title">Chưa giao</Text>
+            <Text className="status-count">
+              {orderData.filter((order) => order.status === "chưa giao").length}{" "}
+              đơn hàng
+            </Text>
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card
+            className="status-card"
+            onClick={() => filterByStatus("đang giao")}
           >
-            <Input />
-          </Form.Item>
-          <Form.Item name="price" label="Giá" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="ship"
-            label="Phí vận chuyển"
-            rules={[{ required: true }]}
+            <Text className="status-title">Đang giao</Text>
+            <Text className="status-count">
+              {orderData.filter((order) => order.status === "đang giao").length}{" "}
+              đơn hàng
+            </Text>
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card
+            className="status-card"
+            onClick={() => filterByStatus("đã giao")}
           >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="total_amount"
-            label="Tổng tiền"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Button className="pink-button" type="primary" htmlType="submit">
-            {currentOrder ? "Cập nhật" : "Thêm"}
-          </Button>
-        </Form>
-      </Modal>
+            <Text className="status-title">Đã giao</Text>
+            <Text className="status-count">
+              {orderData.filter((order) => order.status === "đã giao").length}{" "}
+              đơn hàng
+            </Text>
+          </Card>
+        </Col>
+      </Row>
+      <Table dataSource={filteredData} columns={columns} rowKey="order_id" />
     </div>
   );
 };
