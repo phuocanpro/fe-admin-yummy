@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Table, Button, Modal, Form, Input, DatePicker, Row, Col } from "antd";
 import { orders, users, restaurants } from "../../data/fakeData";
 import "../../styles/styles.css";
@@ -9,44 +9,47 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
+import OrderAPI from "../../API/OrderAPI";
 
 const { RangePicker } = DatePicker;
 
 const OrderManagement = () => {
-  const [orderData, setOrderData] = useState(orders);
-  const [filteredData, setFilteredData] = useState(orders);
+  const [form] = Form.useForm();
+  const [orderData, setOrderData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentOrder, setCurrentOrder] = useState(null);
+  const [rowSelected, setRowSelected] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [dates, setDates] = useState([]);
 
-  const handleAddOrUpdateOrder = (values) => {
-    if (currentOrder) {
-      setOrderData(
-        orderData.map((order) =>
-          order.id === currentOrder.id ? { ...order, ...values } : order
-        )
-      );
-    } else {
-      setOrderData([...orderData, { ...values, id: orderData.length + 1 }]);
-    }
-    setFilteredData(orderData);
-    setIsModalVisible(false);
+  const idUser = localStorage.getItem('userId');
+
+  const getAllOrders = async () => {
+    const res = OrderAPI.Get_Res(idUser);
+    return res;
   };
 
-  const handleDeleteOrder = (id) => {
-    setOrderData(orderData.filter((order) => order.id !== id));
-    setFilteredData(orderData.filter((order) => order.id !== id));
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAllOrders();
+        setOrderData(data);
+      } catch (error) {
+        console.log("err", error);
+      }
+    };
+    fetchData();
+  }, [isModalVisible]);
+
+
+  const handleDeleteOrder = async () => {
+    const res = await OrderAPI.Delete(rowSelected);
   };
 
-  const showModal = (order) => {
-    setCurrentOrder(order);
+  const showModal = () => {
     setIsModalVisible(true);
   };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setCurrentOrder(null);
-  };
 
   const handleDateChange = (dates) => {
     setDates(dates);
@@ -56,41 +59,181 @@ const OrderManagement = () => {
     if (dates.length === 2) {
       const [start, end] = dates;
       const filtered = orderData.filter((order) => {
-        const createdAt = moment(order.createdAt);
+        const createdAt = moment(order.created_at);
         return createdAt.isBetween(start, end, "days", "[]");
       });
-      setFilteredData(filtered);
+      setOrderData(filtered);
     }
   };
 
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const searchInput = useRef(null);
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+
+        <Button
+          type="primary"
+          onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          icon={<SearchOutlined />}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Search
+        </Button>
+        <Button
+          onClick={() => clearFilters && handleReset(clearFilters)}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Reset
+        </Button>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined
+        style={{
+          color: filtered ? "#1890ff" : undefined,
+        }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+  });
+
   const columns = [
     {
-      title: "Người dùng",
-      dataIndex: "user_id",
-      key: "user_id",
-      render: (id) => users.find((u) => u.id === id)?.name || "Không rõ",
+      title: "Tên khách hàng",
+      dataIndex: "name",
+      key: "name",
+      sorter: (a, b) => a.name.length - b.name.length,
+      ...getColumnSearchProps("name"),
     },
     {
-      title: "Nhà hàng",
-      dataIndex: "restaurant_id",
-      key: "restaurant_id",
-      render: (id) => restaurants.find((r) => r.id === id)?.name || "Không rõ",
+      title: "Số điện thoại",
+      dataIndex: "phone",
+      sorter: (a, b) => a.phone - b.phone,
+      ...getColumnSearchProps("phone"),
     },
-    { title: "Giá", dataIndex: "price", key: "price" },
-    { title: "Phí vận chuyển", dataIndex: "ship", key: "ship" },
-    { title: "Tổng tiền", dataIndex: "total_amount", key: "total_amount" },
+    {
+      title: "Địa chỉ",
+      dataIndex: "address",
+      ...getColumnSearchProps("address"),
+    },
+    {
+      title: "Món ăn",
+      dataIndex: "dishes",
+      sorter: (a, b) => (a.dishes || []).length - (b.dishes || []).length,
+      ...getColumnSearchProps("dishes"),
+      render: (dishes) => (
+        <div>
+          {Array.isArray(dishes) && dishes.length > 0 ? (
+            dishes.map((dish, index) => (
+              <div key={index} style={{ marginBottom: "5px" }}>
+                <p>
+                  <strong>Tên món:</strong> {dish.name}
+                </p>
+                <p>
+                  <strong>Giá:</strong> {dish.price}
+                </p>
+                <p>
+                  <strong>Số lượng:</strong> {dish.quantity}
+                </p>
+                <br></br>
+              </div>
+            ))
+          ) : (
+            <p>Không có món nào</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Tiền",
+      dataIndex: "money",
+      sorter: (a, b) => (a.money || []).length - (b.money || []).length,
+      ...getColumnSearchProps("dishes"),
+      render: (money) => (
+        <div>
+          {Array.isArray(money) && money.length > 0 ? (
+            money.map((item, index) => (
+              <div key={index} style={{ marginBottom: "5px" }}>
+                <p>
+                  <strong>Giá tiền:</strong> {item.price}
+                </p>
+                <p>
+                  <strong>Phí ship:</strong> {item.ship}
+                </p>
+                <p>
+                  <strong>Giảm giá:</strong> {item.discount}
+                </p>
+                <p>
+                  <strong>Tổng tiền:</strong> {item.total_amount}
+                </p>
+                <br></br>
+              </div>
+            ))
+          ) : (
+            <p>Trống</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Ghi chú",
+      dataIndex: "option",
+      ...getColumnSearchProps("option"),
+    },
     {
       title: "Hành động",
       key: "actions",
       render: (text, record) => (
         <div className="action-buttons">
-          <Button
-            className="pink-button"
-            icon={<EditOutlined />}
-            onClick={() => showModal(record)}
-          >
-            Sửa
-          </Button>
           <Button
             className="pink-button"
             icon={<DeleteOutlined />}
@@ -106,16 +249,6 @@ const OrderManagement = () => {
   return (
     <div className="owner-container">
       <Row className="button-container" gutter={[16, 16]}>
-        <Col>
-          <Button
-            className="pink-button"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => showModal(null)}
-          >
-            Thêm đơn hàng
-          </Button>
-        </Col>
         <Col>
           <DatePicker
             placeholder="Từ ngày"
@@ -138,50 +271,13 @@ const OrderManagement = () => {
           </Button>
         </Col>
       </Row>
-      <Table dataSource={filteredData} columns={columns} rowKey="id" />
-      <Modal
-        title={currentOrder ? "Sửa đơn hàng" : "Thêm đơn hàng"}
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-      >
-        <Form initialValues={currentOrder} onFinish={handleAddOrUpdateOrder}>
-          <Form.Item
-            name="user_id"
-            label="Người dùng"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="restaurant_id"
-            label="Nhà hàng"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item name="price" label="Giá" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="ship"
-            label="Phí vận chuyển"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="total_amount"
-            label="Tổng tiền"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Button className="pink-button" type="primary" htmlType="submit">
-            {currentOrder ? "Cập nhật" : "Thêm"}
-          </Button>
-        </Form>
-      </Modal>
+      <Table dataSource={orderData} columns={columns} rowKey="id" onRow={(record, rowIndex) => {
+          return {
+            onClick: (event) => {
+              setRowSelected(record.id);
+            },
+          };
+        }}/>
     </div>
   );
 };

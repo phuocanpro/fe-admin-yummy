@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Table,
   Button,
@@ -19,57 +19,47 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
+import ReviewAPI from "../../API/ReviewAPI";
 
 const { RangePicker } = DatePicker;
 
 const ReviewManagement = () => {
-  const [reviewData, setReviewData] = useState(reviews);
-  const [filteredData, setFilteredData] = useState(reviews);
+  const [form] = Form.useForm();
+  const [reviewData, setReviewData] = useState([]);
+  
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentReview, setCurrentReview] = useState(null);
+  const [rowSelected, setRowSelected] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const [dates, setDates] = useState([]);
 
-  const handleAddOrUpdateReview = (values) => {
-    if (currentReview) {
-      setReviewData(
-        reviewData.map((review) =>
-          review.item_id === currentReview.item_id &&
-          review.user_id === currentReview.user_id
-            ? { ...review, ...values }
-            : review
-        )
-      );
-    } else {
-      setReviewData([
-        ...reviewData,
-        { ...values, item_id: reviewData.length + 1 },
-      ]);
-    }
-    setFilteredData(reviewData);
-    setIsModalVisible(false);
+  const idUser = localStorage.getItem('userId');
+
+  const getAllReviews = async () => {
+    const res = ReviewAPI.Get_Res(idUser);
+    return res;
   };
 
-  const handleDeleteReview = (item_id, user_id) => {
-    setReviewData(
-      reviewData.filter(
-        (review) => review.item_id !== item_id || review.user_id !== user_id
-      )
-    );
-    setFilteredData(
-      filteredData.filter(
-        (review) => review.item_id !== item_id || review.user_id !== user_id
-      )
-    );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAllReviews();
+        setReviewData(data);
+      } catch (error) {
+        console.log("err", error);
+      }
+    };
+    fetchData();
+  }, [isModalVisible]);
+
+
+  const handleDeleteReview = async () => {
+    const res = await ReviewAPI.Delete(rowSelected);
   };
 
-  const showModal = (review) => {
-    setCurrentReview(review);
+  const showModal = () => {
     setIsModalVisible(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setCurrentReview(null);
   };
 
   const handleDateChange = (dates) => {
@@ -80,45 +70,122 @@ const ReviewManagement = () => {
     if (dates.length === 2) {
       const [start, end] = dates;
       const filtered = reviewData.filter((review) => {
-        const createdAt = moment(review.createdAt);
+        const createdAt = moment(review.created_at);
         return createdAt.isBetween(start, end, "days", "[]");
       });
-      setFilteredData(filtered);
+      setReviewData(filtered);
     }
   };
 
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const searchInput = useRef(null);
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+
+        <Button
+          type="primary"
+          onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          icon={<SearchOutlined />}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Search
+        </Button>
+        <Button
+          onClick={() => clearFilters && handleReset(clearFilters)}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Reset
+        </Button>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined
+        style={{
+          color: filtered ? "#1890ff" : undefined,
+        }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+  });
+
+
   const columns = [
     {
-      title: "Món ăn",
-      dataIndex: "item_id",
-      key: "item_id",
-      render: (id) => dishes.find((d) => d.id === id)?.name || "Không rõ",
-    },
-    {
-      title: "Người dùng",
-      dataIndex: "user_id",
-      key: "user_id",
-      render: (id) => users.find((u) => u.id === id)?.name || "Không rõ",
+      title: "Tên khách hàng",
+      dataIndex: "user_name",
+      key: "user_name",
+      sorter: (a, b) => a.user_name.length - b.user_name.length,
+      ...getColumnSearchProps("user_name"),
     },
     {
       title: "Đánh giá",
       dataIndex: "rating",
       key: "rating",
       render: (rating) => <Rate disabled value={rating} />,
+      sorter: (a, b) => a.rating - b.rating,
+      ...getColumnSearchProps("rating"),
     },
-    { title: "Bình luận", dataIndex: "comment", key: "comment" },
+    {
+      title: "Bình luận",
+      dataIndex: "comment",
+      key: "comment",
+      sorter: (a, b) => a.comment.length - b.comment.length,
+      ...getColumnSearchProps("comment"),
+    },
     {
       title: "Hành động",
       key: "actions",
       render: (text, record) => (
         <div className="action-buttons">
-          <Button
-            className="pink-button"
-            icon={<EditOutlined />}
-            onClick={() => showModal(record)}
-          >
-            Sửa
-          </Button>
           <Button
             className="pink-button"
             icon={<DeleteOutlined />}
@@ -134,16 +201,6 @@ const ReviewManagement = () => {
   return (
     <div className="owner-container">
       <Row className="button-container" gutter={[16, 16]}>
-        <Col>
-          <Button
-            className="pink-button"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => showModal(null)}
-          >
-            Thêm đánh giá
-          </Button>
-        </Col>
         <Col>
           <DatePicker
             placeholder="Từ ngày"
@@ -167,46 +224,17 @@ const ReviewManagement = () => {
         </Col>
       </Row>
       <Table
-        dataSource={filteredData}
+        dataSource={reviewData}
         columns={columns}
-        rowKey={(record) => `${record.item_id}-${record.user_id}`}
+        rowKey="id" onRow={(record, rowIndex) => {
+          return {
+            onClick: (event) => {
+              setRowSelected(record.id);
+            },
+          };
+        }}
       />
-      <Modal
-        title={currentReview ? "Sửa đánh giá" : "Thêm đánh giá"}
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-      >
-        <Form initialValues={currentReview} onFinish={handleAddOrUpdateReview}>
-          <Form.Item name="item_id" label="Món ăn" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="user_id"
-            label="Người dùng"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="rating"
-            label="Đánh giá"
-            rules={[{ required: true }]}
-          >
-            <Rate />
-          </Form.Item>
-          <Form.Item
-            name="comment"
-            label="Bình luận"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Button className="pink-button" type="primary" htmlType="submit">
-            {currentReview ? "Cập nhật" : "Thêm"}
-          </Button>
-        </Form>
-      </Modal>
+      
     </div>
   );
 };

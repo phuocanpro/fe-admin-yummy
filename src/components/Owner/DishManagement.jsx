@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Table,
   Button,
@@ -41,7 +41,6 @@ const DishManagement = () => {
     type: "",
   });
   const [rowSelected, setRowSelected] = useState("");
-  const [searchValue, setSearchValue] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dates, setDates] = useState([]);
@@ -93,6 +92,7 @@ const DishManagement = () => {
     if (rowSelected) {
       const res = await DishAPI.Put(stateDetails);
       if (res.status === "SUCCESS") {
+        console.log("dong");
         handleCancel();
       }
     } else {
@@ -116,37 +116,6 @@ const DishManagement = () => {
     }
   };
 
-  const handleOnchangeSearch = (e) => {
-    setSearchValue(e.target.value);
-  };
-
-  useEffect(() => {
-    const handleSearch = async () => {
-      try {
-        setLoading(true);
-        const res = await DishAPI.Search(searchValue);
-        if (res.status === "success") {
-          setDishData([]);
-        } else if (res.status === "error") {
-          const data = getAllDishes();
-          setDishData(Array.from(data));
-          setLoading(false);
-        } else {
-          setDishData(Array.from(res));
-          setLoading(false);
-        }
-      } catch (err) {
-        setError("Đã có lỗi xảy ra");
-      }
-    };
-
-    if (searchValue.trim() !== "") {
-      handleSearch();
-    } else {
-      const data = getAllDishes();
-      setDishData(Array.from(data));
-    }
-  }, [searchValue]);
 
   const handleDateChange = (dates) => {
     setDates(dates);
@@ -156,10 +125,11 @@ const DishManagement = () => {
     if (dates.length === 2) {
       const [start, end] = dates;
       const filtered = dishData.filter((dish) => {
-        const createdAt = moment(dish.createdAt);
+        const createdAt = moment(dish.created_at);
         return createdAt.isBetween(start, end, "days", "[]");
       });
       setDishData(filtered);
+      
     }
   };
 
@@ -196,11 +166,114 @@ const DishManagement = () => {
     });
   };
 
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const searchInput = useRef(null);
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+
+        <Button
+          type="primary"
+          onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          icon={<SearchOutlined />}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Search
+        </Button>
+        <Button
+          onClick={() => clearFilters && handleReset(clearFilters)}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Reset
+        </Button>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined
+        style={{
+          color: filtered ? "#1890ff" : undefined,
+        }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+  });
+
   const columns = [
-    { title: "Tên món", dataIndex: "name", key: "name" },
-    { title: "Giá", dataIndex: "price", key: "price" },
-    { title: "Đánh giá", dataIndex: "rate", key: "rate" },
-    { title: "Loại", dataIndex: "type", key: "type" },
+    {
+      title: "Tên món",
+      dataIndex: "name",
+      sorter: (a, b) => a.name.length - b.name.length,
+      ...getColumnSearchProps("name"),
+      key: "name"
+    },
+    {
+      title: "Giá",
+      dataIndex: "price",
+      sorter: (a, b) => a.price - b.price,
+      ...getColumnSearchProps("price"),
+      key: "price"
+    },
+    {
+      title: "Đánh giá",
+      dataIndex: "rate",
+      sorter: (a, b) => a.rate - b.rate,
+      ...getColumnSearchProps("rate"),
+      key: "rate"
+    },
+    {
+      title: "Loại",
+      dataIndex: "type",
+      ...getColumnSearchProps("type"),
+      key: "type"
+    },
     {
       title: "Hành động",
       key: "actions",
@@ -237,14 +310,6 @@ const DishManagement = () => {
           >
             Thêm món
           </Button>
-        </Col>
-        <Col>
-          <Input
-            type="text"
-            placeholder="Nhập từ khóa tìm kiếm"
-            value={searchValue}
-            onChange={handleOnchangeSearch}
-          />
         </Col>
         <Col>
           <DatePicker

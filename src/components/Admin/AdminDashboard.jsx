@@ -78,7 +78,7 @@ const AdminDashboard = () => {
               alt="Restaurant Icon"
               className="sidebar-icon"
             />{" "}
-            Quản lý nhà hàng
+            Quản lý quán ăn
           </button>
         </div>
         <div className="content">{renderComponent()}</div>
