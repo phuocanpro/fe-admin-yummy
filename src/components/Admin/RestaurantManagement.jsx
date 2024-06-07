@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Table, Button, Modal, Form, Input, DatePicker, Row, Col } from "antd";
 import {
   PlusOutlined,
@@ -17,7 +17,7 @@ const { RangePicker } = DatePicker;
 const RestaurantManagement = () => {
   const [form] = Form.useForm();
   const [restaurantData, setRestaurantData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [stateDetails, setStateDetails] = useState({
     id: "",
@@ -29,9 +29,6 @@ const RestaurantManagement = () => {
     user_id: "",
   });
   const [rowSelected, setRowSelected] = useState("");
-  const [searchValue, setSearchValue] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [dates, setDates] = useState([]);
 
   const getAllRestaurants = async () => {
@@ -53,7 +50,6 @@ const RestaurantManagement = () => {
           });
         }
         setRestaurantData(modifiedData);
-        setFilteredData(modifiedData);
       } catch (error) {
         console.log("err", error);
       }
@@ -105,10 +101,6 @@ const RestaurantManagement = () => {
     }
   };
 
-  const handleOnchangeSearch = (e) => {
-    setSearchValue(e.target.value);
-  };
-
   const handleDateChange = (dates) => {
     setDates(dates);
   };
@@ -117,42 +109,13 @@ const RestaurantManagement = () => {
     if (dates.length === 2) {
       const [start, end] = dates;
       const filtered = restaurantData.filter((restaurant) => {
-        const createdAt = moment(restaurant.createdAt);
+        const createdAt = moment(restaurant.created_at);
         return createdAt.isBetween(start, end, "days", "[]");
       });
-      setFilteredData(filtered);
-    } else {
-      setFilteredData(restaurantData);
-    }
+      setRestaurantData(filtered);
+    } 
   };
 
-  useEffect(() => {
-    const handleSearch = async () => {
-      try {
-        setLoading(true);
-        const res = await RestaurantAPI.Search(searchValue);
-        if (res.status === "success") {
-          setRestaurantData([]);
-        } else if (res.status === "error") {
-          const data = getAllRestaurants();
-          setRestaurantData(Array.from(data));
-          setLoading(false);
-        } else {
-          setRestaurantData(Array.from(res));
-          setLoading(false);
-        }
-      } catch (err) {
-        setError("Đã có lỗi xảy ra");
-      }
-    };
-
-    if (searchValue.trim() !== "") {
-      handleSearch();
-    } else {
-      const data = getAllRestaurants();
-      setRestaurantData(Array.from(data));
-    }
-  }, [searchValue]);
 
   const handleCancel = () => {
     setIsModalVisible(false);
@@ -176,12 +139,104 @@ const RestaurantManagement = () => {
     });
   };
 
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const searchInput = useRef(null);
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+
+        <Button
+          type="primary"
+          onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          icon={<SearchOutlined />}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Search
+        </Button>
+        <Button
+          onClick={() => clearFilters && handleReset(clearFilters)}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Reset
+        </Button>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined
+        style={{
+          color: filtered ? "#1890ff" : undefined,
+        }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+  });
+
   const columns = [
-    { title: "Tên", dataIndex: "name", key: "name" },
-    { title: "Địa chỉ", dataIndex: "address", key: "address" },
-    { title: "Số điện thoại", dataIndex: "phone", key: "phone" },
-    { title: "Giờ mở cửa", dataIndex: "opening_hours", key: "opening_hours" },
-    { title: "Tên chủ quán", dataIndex: "owner_name", key: "owner_name" },
+    { title: "Tên", dataIndex: "name", key: "name",
+      sorter: (a, b) => a.name.length - b.name.length,
+      ...getColumnSearchProps("name"),
+     },
+    { title: "Địa chỉ", dataIndex: "address", key: "address",
+      ...getColumnSearchProps("address"),
+     },
+    { title: "Số điện thoại", dataIndex: "phone", key: "phone",
+      ...getColumnSearchProps("phone"),
+     },
+    { title: "Giờ mở cửa", dataIndex: "opening_hours", key: "opening_hours",
+      ...getColumnSearchProps("opening_hours"),
+     },
+    { title: "Tên chủ quán", dataIndex: "owner_name", key: "owner_name",
+      sorter: (a, b) => a.owner_name.length - b.owner_name.length,
+      ...getColumnSearchProps("owner_name"),
+     },
     {
       title: "Hành động",
       key: "actions",
@@ -210,24 +265,6 @@ const RestaurantManagement = () => {
     <div className="owner-container">
       <Row className="button-container" gutter={[16, 16]}>
         <Col>
-          <Button
-            className="pink-button"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={showModal}
-          >
-            Thêm nhà hàng
-          </Button>
-        </Col>
-        <Col>
-          <Input
-            type="text"
-            placeholder="Nhập từ khóa tìm kiếm"
-            value={searchValue}
-            onChange={handleOnchangeSearch}
-          />
-        </Col>
-        <Col>
           <DatePicker
             placeholder="Từ ngày"
             onChange={(date) => handleDateChange([date, dates[1]])}
@@ -249,10 +286,8 @@ const RestaurantManagement = () => {
           </Button>
         </Col>
       </Row>
-      {loading ? <div>Đang tìm kiếm...</div> : <div>{error}</div>}
-      <br />
       <Table
-        dataSource={filteredData}
+        dataSource={restaurantData}
         columns={columns}
         rowKey="id"
         onRow={(record, rowIndex) => {

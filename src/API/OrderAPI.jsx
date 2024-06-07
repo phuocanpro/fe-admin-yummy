@@ -3,7 +3,7 @@ import axiosClient from "./axiosClient";
 
 const OrderAPI = {
   Get_All: () => {
-    const url = "/api/dish/getAll";
+    const url = "/api/orderItems/getAllAll";
     return axiosClient.get(url);
   },
 
@@ -12,7 +12,7 @@ const OrderAPI = {
     return axiosClient.get(url);
   },
 
-  Get_Item_: (id) => {
+  Get_Item: (id) => {
     const url = `/api/dish/getItem/${id}`;
     return axiosClient.get(url);
   },
@@ -32,8 +32,8 @@ const OrderAPI = {
     return axiosClient.post(url, data);
   },
 
-  Delete: (id) => {
-    const url = `/api/dish/delete/${id}`;
+  Delete_Admin: (order_id) => {
+    const url = `/api/orderItems/deleteAll/${order_id}`;
     return axiosClient.delete(url);
   },
 };

@@ -12,6 +12,11 @@ const RestaurantAPI = {
     return axiosClient.get(url);
   },
 
+  Get_Item_Owner: (id) => {
+    const url = `/api/restaurant/getItemOwner/${id}`;
+    return axiosClient.get(url);
+  },
+
   Search: (input) => {
     const url = `/api/restaurant/search/${input}`;
     return axiosClient.get(url);

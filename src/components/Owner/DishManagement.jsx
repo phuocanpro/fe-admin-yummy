@@ -41,12 +41,12 @@ const DishManagement = () => {
     type: "",
   });
   const [rowSelected, setRowSelected] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [dates, setDates] = useState([]);
 
+  const idUser = localStorage.getItem('userId');
+
   const getAllDishes = async () => {
-    const res = DishAPI.Get_All();
+    const res = DishAPI.Get_All(idUser);
     return res;
   };
 
@@ -333,7 +333,7 @@ const DishManagement = () => {
           </Button>
         </Col>
       </Row>
-      {loading ? <div>Đang tìm kiếm...</div> : <div>{error}</div>}
+    
       <Table
         dataSource={dishData}
         columns={columns}

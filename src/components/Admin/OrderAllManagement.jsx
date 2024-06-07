@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Table,
   Button,
@@ -21,44 +21,52 @@ import {
 import { dishes, restaurants } from "../../data/fakeData";
 import "../../styles/styles.css";
 import moment from "moment";
+import OrderAPI from "../../API/OrderAPI";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
 const OrderAllManagement = () => {
-  const [dishData, setDishData] = useState(dishes);
-  const [filteredData, setFilteredData] = useState(dishes);
+  const [orderData, setOrderData] = useState([]);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentDish, setCurrentDish] = useState(null);
+  const [rowSelected, setRowSelected] = useState("");
+
   const [dates, setDates] = useState([]);
 
-  const handleAddOrUpdateDish = (values) => {
-    if (currentDish) {
-      setDishData(
-        dishData.map((dish) =>
-          dish.id === currentDish.id ? { ...dish, ...values } : dish
-        )
-      );
-    } else {
-      setDishData([...dishData, { ...values, id: dishData.length + 1 }]);
-    }
-    setFilteredData(dishData);
-    setIsModalVisible(false);
+
+  const getAllOrders = async () => {
+    const res = OrderAPI.Get_All();
+    return res;
   };
 
-  const handleDeleteDish = (id) => {
-    setDishData(dishData.filter((dish) => dish.id !== id));
-    setFilteredData(filteredData.filter((dish) => dish.id !== id));
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAllOrders();
+        setOrderData(data);
+      } catch (error) {
+        console.log("err", error);
+      }
+    };
+    fetchData();
+  }, [isModalVisible]);
 
-  const showModal = (dish) => {
-    setCurrentDish(dish);
+
+  const showModal = () => {
     setIsModalVisible(true);
+  };
+
+  const handleDeleteOrder = async () => {
+    const res = await OrderAPI.Delete_Admin(rowSelected);
+    if (res.status === "SUCCESS") {
+      handleCancel();
+    }
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
-    setCurrentDish(null);
+    setRowSelected("");
   };
 
   const handleDateChange = (dates) => {
@@ -68,30 +76,183 @@ const OrderAllManagement = () => {
   const handleSearchByDate = () => {
     if (dates.length === 2) {
       const [start, end] = dates;
-      const filtered = dishData.filter((dish) => {
-        const createdAt = moment(dish.createdAt);
+      const filtered = orderData.filter((dish) => {
+        const createdAt = moment(dish.created_at);
         return createdAt.isBetween(start, end, "days", "[]");
       });
-      setFilteredData(filtered);
+      setOrderData(filtered);
     }
   };
 
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const searchInput = useRef(null);
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+
+        <Button
+          type="primary"
+          onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          icon={<SearchOutlined />}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Search
+        </Button>
+        <Button
+          onClick={() => clearFilters && handleReset(clearFilters)}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Reset
+        </Button>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined
+        style={{
+          color: filtered ? "#1890ff" : undefined,
+        }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+  });
+
+
   const columns = [
-    { title: "Tên Món", dataIndex: "name", key: "name" },
     {
-      title: "Nhà Hàng",
-      dataIndex: "restaurant_id",
-      key: "restaurant_id",
-      render: (id) => restaurants.find((r) => r.id === id)?.name || "Không rõ",
+      title: "Quán Ăn",
+      dataIndex: "restaurant_name",
+      key: "restaurant_name",
+      sorter: (a, b) => a.restaurant_name.length - b.restaurant_name.length,
+      ...getColumnSearchProps("restaurant_name"),
     },
-    { title: "Giá", dataIndex: "price", key: "price" },
+    { title: "Tên khách hàng",
+      dataIndex: "name",
+      key: "name",
+      sorter: (a, b) => a.name.length - b.name.length,
+      ...getColumnSearchProps("name"),},
     {
-      title: "Đánh Giá",
-      dataIndex: "rate",
-      key: "rate",
-      render: (rate) => <Rate disabled defaultValue={rate} />,
+      title: "Số điện thoại",
+      dataIndex: "phone",
+      sorter: (a, b) => a.phone - b.phone,
+      ...getColumnSearchProps("phone"),
     },
-    { title: "Loại", dataIndex: "type", key: "type" },
+    {
+      title: "Địa chỉ",
+      dataIndex: "address",
+      ...getColumnSearchProps("address"),
+    },
+    {
+      title: "Món ăn",
+      dataIndex: "dishes",
+      sorter: (a, b) => (a.dishes || []).length - (b.dishes || []).length,
+      ...getColumnSearchProps("dishes"),
+      render: (dishes) => (
+        <div>
+          {Array.isArray(dishes) && dishes.length > 0 ? (
+            dishes.map((dish, index) => (
+              <div key={index} style={{ marginBottom: "5px" }}>
+                <p>
+                  <strong>Tên món:</strong> {dish.name}
+                </p>
+                <p>
+                  <strong>Giá:</strong> {dish.price}
+                </p>
+                <p>
+                  <strong>Số lượng:</strong> {dish.quantity}
+                </p>
+                <br></br>
+              </div>
+            ))
+          ) : (
+            <p>Không có món nào</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Tiền",
+      dataIndex: "money",
+      sorter: (a, b) => (a.money || []).length - (b.money || []).length,
+      ...getColumnSearchProps("dishes"),
+      render: (money) => (
+        <div>
+          {Array.isArray(money) && money.length > 0 ? (
+            money.map((item, index) => (
+              <div key={index} style={{ marginBottom: "5px" }}>
+                <p>
+                  <strong>Giá tiền:</strong> {item.price}
+                </p>
+                <p>
+                  <strong>Phí ship:</strong> {item.ship}
+                </p>
+                <p>
+                  <strong>Giảm giá:</strong> {item.discount}
+                </p>
+                <p>
+                  <strong>Tổng tiền:</strong> {item.total_amount}
+                </p>
+                <br></br>
+              </div>
+            ))
+          ) : (
+            <p>Trống</p>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Ghi chú",
+      dataIndex: "option",
+      ...getColumnSearchProps("option"),
+    },
     {
       title: "Hành động",
       key: "actions",
@@ -99,15 +260,8 @@ const OrderAllManagement = () => {
         <div className="action-buttons">
           <Button
             className="pink-button"
-            icon={<EditOutlined />}
-            onClick={() => showModal(record)}
-          >
-            Sửa
-          </Button>
-          <Button
-            className="pink-button"
             icon={<DeleteOutlined />}
-            onClick={() => handleDeleteDish(record.id)}
+            onClick={() => handleDeleteOrder(rowSelected)}
           >
             Xóa
           </Button>
@@ -119,16 +273,7 @@ const OrderAllManagement = () => {
   return (
     <div className="owner-container">
       <Row className="button-container" gutter={[16, 16]}>
-        <Col>
-          <Button
-            className="pink-button"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => showModal(null)}
-          >
-            Thêm món ăn
-          </Button>
-        </Col>
+
         <Col>
           <DatePicker
             placeholder="Từ ngày"
@@ -151,48 +296,14 @@ const OrderAllManagement = () => {
           </Button>
         </Col>
       </Row>
-      <Table dataSource={filteredData} columns={columns} rowKey="id" />
-      <Modal
-        title={currentDish ? "Sửa món ăn" : "Thêm món ăn"}
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-      >
-        <Form initialValues={currentDish} onFinish={handleAddOrUpdateDish}>
-          <Form.Item name="name" label="Tên Món" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="restaurant_id"
-            label="Nhà Hàng"
-            rules={[{ required: true }]}
-          >
-            <Select>
-              {restaurants.map((restaurant) => (
-                <Select.Option key={restaurant.id} value={restaurant.id}>
-                  {restaurant.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item name="price" label="Giá" rules={[{ required: true }]}>
-            <InputNumber min={0} style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item name="rate" label="Đánh Giá" rules={[{ required: true }]}>
-            <Rate />
-          </Form.Item>
-          <Form.Item name="type" label="Loại" rules={[{ required: true }]}>
-            <Select>
-              <Select.Option value="Chính">Chính</Select.Option>
-              <Select.Option value="Khai Vị">Khai Vị</Select.Option>
-              <Select.Option value="Tráng Miệng">Tráng Miệng</Select.Option>
-            </Select>
-          </Form.Item>
-          <Button className="pink-button" type="primary" htmlType="submit">
-            {currentDish ? "Cập nhật" : "Thêm"}
-          </Button>
-        </Form>
-      </Modal>
+      <Table dataSource={orderData} columns={columns} rowKey="id" onRow={(record, rowIndex) => {
+          return {
+            onClick: (event) => {
+              setRowSelected(record.id);
+            },
+          };
+        }} />
+    
     </div>
   );
 };

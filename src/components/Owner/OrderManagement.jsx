@@ -9,8 +9,8 @@ const { RangePicker } = DatePicker;
 const { Text } = Typography;
 
 const OrderManagement = () => {
-  const [orderData, setOrderData] = useState(orderItems);
-  const [filteredData, setFilteredData] = useState(orderItems);
+  const [orderData, setOrderData] = useState([]);
+ 
   const [dates, setDates] = useState([]);
   const [statusFilter, setStatusFilter] = useState("all");
 
@@ -31,7 +31,7 @@ const OrderManagement = () => {
   };
 
   const filterData = () => {
-    let filtered = orderItems; // Ensure we start filtering from the original data
+    let filtered = orderItems; 
 
     if (dates.length === 2) {
       const [start, end] = dates;
@@ -47,7 +47,7 @@ const OrderManagement = () => {
       filtered = filtered.filter((order) => order.status === statusFilter);
     }
 
-    setFilteredData(filtered);
+    // setFilteredData(filtered);
   };
 
   const columns = [
@@ -159,7 +159,7 @@ const OrderManagement = () => {
           </Card>
         </Col>
       </Row>
-      <Table dataSource={filteredData} columns={columns} rowKey="order_id" />
+      {/* <Table dataSource={filteredData} columns={columns} rowKey="order_id" /> */}
     </div>
   );
 };

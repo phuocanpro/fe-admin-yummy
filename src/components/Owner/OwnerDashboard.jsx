@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DishManagement from "./DishManagement";
 import OrderManagement from "./OrderManagement";
@@ -16,6 +16,17 @@ const OwnerDashboard = () => {
   const [activeComponent, setActiveComponent] = useState("MenuManagement");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
+
+  const idUser = localStorage.getItem('userId');
+
+  useEffect(() => {
+    try {
+      if (!idUser) navigate("/login");
+    } catch (error) {
+      // Handle error
+      console.log("err", error);
+    }
+  }, []);
 
   const renderComponent = () => {
     switch (activeComponent) {

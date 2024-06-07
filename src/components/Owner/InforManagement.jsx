@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Form,
   Input,
@@ -14,83 +14,66 @@ import moment from "moment";
 import { SearchOutlined } from "@ant-design/icons";
 import { restaurants } from "../../data/fakeData";
 import "../../styles/styles.css";
+import RestaurantAPI from "../../API/RestaurantAPI";
 
-const { RangePicker } = DatePicker;
+
 const { Title, Text } = Typography;
+
 
 const InforManagement = () => {
   const [form] = Form.useForm();
-  const [infoData, setInfoData] = useState(restaurants[0]);
-  const [dates, setDates] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [infoData, setInfoData] = useState({
+    id: "",
+    name: "",
+    phone: "",
+    address: "",
+    opening_hours: "",
+  });
 
-  const handleDateChange = (dates) => {
-    setDates(dates);
+
+  const idUser = localStorage.getItem('userId');
+
+
+  const getItem = async () => {
+    const res = RestaurantAPI.Get_Item_Owner(idUser);
+    return res;
   };
 
-  const handleSearch = () => {
-    if (dates.length === 2) {
-      const [start, end] = dates;
-    }
-  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getItem();
+          setInfoData(data);
+          form.setFieldsValue(data);
+      } catch (error) {
+        console.log("err", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+
+  useEffect(() => {
+    console.log(infoData);
+    form.setFieldsValue(infoData);
+  }, [form, infoData]);
+
 
   const handleUpdate = (values) => {
-    setInfoData({
-      ...infoData,
-      ...values,
-      opening_hours:
-        values.opening_hours.format("HH:mm") +
-        " - " +
-        values.closing_hours.format("HH:mm"),
-    });
-  };
+      setInfoData(values);
+      const res = RestaurantAPI.Put(infoData);
+    };
+
 
   return (
     <div className="info-management-container">
-      <Row
-        className="button-container"
-        gutter={[16, 16]}
-        style={{ marginBottom: "32px" }}
-      >
-        <Col span={10}>
-          <DatePicker
-            placeholder="Từ ngày"
-            onChange={(date) => handleDateChange([date, dates[1]])}
-            style={{ width: "100%" }}
-          />
-        </Col>
-        <Col span={10}>
-          <DatePicker
-            placeholder="Đến ngày"
-            onChange={(date) => handleDateChange([dates[0], date])}
-            style={{ width: "100%" }}
-          />
-        </Col>
-        <Col span={4}>
-          <Button
-            type="primary"
-            icon={<SearchOutlined />}
-            onClick={handleSearch}
-            style={{ width: "100%" }}
-          >
-            Tìm kiếm
-          </Button>
-        </Col>
-      </Row>
       <Card className="info-card">
         <Form
           form={form}
           onFinish={handleUpdate}
-          initialValues={{
-            ...infoData,
-            opening_hours: moment(
-              infoData.opening_hours.split(" - ")[0],
-              "HH:mm"
-            ),
-            closing_hours: moment(
-              infoData.opening_hours.split(" - ")[1],
-              "HH:mm"
-            ),
-          }}
+          initialValues={infoData}
         >
           <Title
             level={2}
@@ -108,7 +91,7 @@ const InforManagement = () => {
                 }
                 name="name"
               >
-                <Input defaultValue={infoData.name} />
+                <Input defaultValue={infoData['name']} />
               </Form.Item>
             </Col>
             <Col span={24}>
@@ -120,7 +103,7 @@ const InforManagement = () => {
                 }
                 name="phone"
               >
-                <Input defaultValue={infoData.phone} />
+                <Input defaultValue={infoData['phone']} />
               </Form.Item>
             </Col>
             <Col span={24}>
@@ -132,7 +115,7 @@ const InforManagement = () => {
                 }
                 name="address"
               >
-                <Input defaultValue={infoData.address} />
+                <Input defaultValue={infoData['address']} />
               </Form.Item>
             </Col>
             <Col span={24}>
@@ -142,15 +125,9 @@ const InforManagement = () => {
                     Giờ mở cửa:
                   </Text>
                 }
+                name="opening_hours"
               >
-                <Input.Group compact>
-                  <Form.Item name="opening_hours" noStyle>
-                    <TimePicker format="HH:mm" style={{ width: "50%" }} />
-                  </Form.Item>
-                  <Form.Item name="closing_hours" noStyle>
-                    <TimePicker format="HH:mm" style={{ width: "50%" }} />
-                  </Form.Item>
-                </Input.Group>
+                <Input defaultValue={infoData['opening_hours']} />
               </Form.Item>
             </Col>
           </Row>
@@ -177,4 +154,8 @@ const InforManagement = () => {
   );
 };
 
+
 export default InforManagement;
+
+
+

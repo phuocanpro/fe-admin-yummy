@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Table, Button, Modal, Form, Input, DatePicker, Row, Col } from "antd";
 import {
   PlusOutlined,
@@ -16,7 +16,7 @@ const { RangePicker } = DatePicker;
 const UserManagement = () => {
   const [form] = Form.useForm();
   const [userData, setUserData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [stateUserDetails, setStateUserDetails] = useState({
     id: "",
@@ -29,9 +29,7 @@ const UserManagement = () => {
     coin: "",
   });
   const [rowSelected, setRowSelected] = useState("");
-  const [searchValue, setSearchValue] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+
   const [dates, setDates] = useState([]);
 
   const getAllUsers = async () => {
@@ -42,9 +40,8 @@ const UserManagement = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const usersData = await getAllUsers();
-        setUserData(Array.from(usersData));
-        setFilteredData(Array.from(usersData));
+        const data = await getAllUsers();
+        setUserData(data);
       } catch (error) {
         // Handle error
         console.log("err", error);
@@ -53,19 +50,9 @@ const UserManagement = () => {
     fetchData();
   }, [isModalVisible]);
 
-  const handleDetailsUsers = () => {
+  const showModal = () => {
     setIsModalVisible(true);
   };
-
-  useEffect(() => {
-    if (rowSelected && isModalVisible) {
-      fetchGetDetailsUser(rowSelected);
-    }
-  }, [rowSelected, isModalVisible]);
-
-  useEffect(() => {
-    form.setFieldsValue(stateUserDetails);
-  }, [form, stateUserDetails, rowSelected]);
 
   const fetchGetDetailsUser = async (rowSelected) => {
     const response = await UserAPI.Get_User(rowSelected);
@@ -81,6 +68,21 @@ const UserManagement = () => {
       coin: response?.coin,
     });
   };
+
+
+  useEffect(() => {
+    if (rowSelected && isModalVisible) {
+      fetchGetDetailsUser(rowSelected);
+    }
+  }, [rowSelected, isModalVisible]);
+
+  useEffect(() => {
+    form.setFieldsValue(stateUserDetails);
+  }, [form, stateUserDetails, rowSelected]);
+
+  // const handleDetailsUsers = () => {
+  //   setIsModalVisible(true);
+  // };
 
   const handleAddOrUpdateUser = async () => {
     const res = await UserAPI.Put_User(stateUserDetails);
@@ -100,9 +102,6 @@ const UserManagement = () => {
     }
   };
 
-  const handleOnchangeSearch = (e) => {
-    setSearchValue(e.target.value);
-  };
 
   const handleDateChange = (dates) => {
     setDates(dates);
@@ -112,42 +111,13 @@ const UserManagement = () => {
     if (dates.length === 2) {
       const [start, end] = dates;
       const filtered = userData.filter((user) => {
-        const createdAt = moment(user.createdAt);
+        const createdAt = moment(user.created_at);
         return createdAt.isBetween(start, end, "days", "[]");
       });
-      setFilteredData(filtered);
-    } else {
-      setFilteredData(userData);
+      setUserData(filtered);
     }
   };
 
-  useEffect(() => {
-    const handleSearch = async () => {
-      try {
-        setLoading(true);
-        const res = await UserAPI.Search(searchValue);
-        if (res.status === "success") {
-          setUserData([]);
-        } else if (res.status === "error") {
-          const usersData = getAllUsers();
-          setUserData(Array.from(usersData));
-          setLoading(false);
-        } else {
-          setUserData(Array.from(res));
-          setLoading(false);
-        }
-      } catch (err) {
-        setError("Đã có lỗi xảy ra");
-      }
-    };
-
-    if (searchValue.trim() !== "") {
-      handleSearch();
-    } else {
-      const usersData = getAllUsers();
-      setUserData(Array.from(usersData));
-    }
-  }, [searchValue]);
 
   const handleCancel = () => {
     setIsModalVisible(false);
@@ -165,21 +135,119 @@ const UserManagement = () => {
     setRowSelected("");
   };
 
-  const handleOnchangeDetails = (e) => {
+  const handleOnchangeDetails = (name, value) => {
     setStateUserDetails({
       ...stateUserDetails,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   };
 
+  const [searchText, setSearchText] = useState("");
+  const [searchedColumn, setSearchedColumn] = useState("");
+  const searchInput = useRef(null);
+
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters) => {
+    clearFilters();
+    setSearchText("");
+  };
+
+  const getColumnSearchProps = (dataIndex) => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: "block",
+          }}
+        />
+
+        <Button
+          type="primary"
+          onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          icon={<SearchOutlined />}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Search
+        </Button>
+        <Button
+          onClick={() => clearFilters && handleReset(clearFilters)}
+          size="small"
+          style={{
+            width: 90,
+          }}
+        >
+          Reset
+        </Button>
+      </div>
+    ),
+    filterIcon: (filtered) => (
+      <SearchOutlined
+        style={{
+          color: filtered ? "#1890ff" : undefined,
+        }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+  });
+
   const columns = [
-    { title: "Tên", dataIndex: "name", key: "name" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Số điện thoại", dataIndex: "phone", key: "phone" },
-    { title: "Địa chỉ", dataIndex: "address", key: "address" },
-    { title: "Vai trò", dataIndex: "role", key: "role" },
-    { title: "Cấp độ", dataIndex: "level", key: "level" },
-    { title: "Số xu", dataIndex: "coin", key: "coin" },
+    { title: "Tên", 
+      dataIndex: "name",
+       key: "name",
+       sorter: (a, b) => a.name.length - b.name.length,
+      ...getColumnSearchProps("name"),
+    },
+    { title: "Email", dataIndex: "email", key: "email" ,
+      sorter: (a, b) => a.email.length - b.email.length,
+      ...getColumnSearchProps("email"),
+    },
+    { title: "Số điện thoại", dataIndex: "phone", key: "phone",
+      ...getColumnSearchProps("phone")
+    },
+    { title: "Địa chỉ", dataIndex: "address", key: "address",
+      ...getColumnSearchProps("address")
+     },
+    { title: "Vai trò", dataIndex: "role", key: "role",
+      ...getColumnSearchProps("role")
+     },
+    { title: "Cấp độ", dataIndex: "level", key: "level",
+      ...getColumnSearchProps("level")
+    },
+    { title: "Số xu", dataIndex: "coin", key: "coin",
+      ...getColumnSearchProps("coin")
+     },
     {
       title: "Hành động",
       key: "actions",
@@ -188,7 +256,7 @@ const UserManagement = () => {
           <Button
             className="pink-button"
             icon={<EditOutlined />}
-            onClick={handleDetailsUsers}
+            onClick={showModal}
           >
             Sửa
           </Button>
@@ -207,24 +275,6 @@ const UserManagement = () => {
   return (
     <div className="owner-container">
       <Row className="button-container" gutter={[16, 16]}>
-        <Col>
-          <Button
-            className="pink-button"
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setIsModalVisible(true)}
-          >
-            Thêm người dùng
-          </Button>
-        </Col>
-        <Col>
-          <Input
-            type="text"
-            placeholder="Nhập từ khóa tìm kiếm"
-            value={searchValue}
-            onChange={handleOnchangeSearch}
-          />
-        </Col>
         <Col>
           <DatePicker
             placeholder="Từ ngày"
@@ -247,10 +297,9 @@ const UserManagement = () => {
           </Button>
         </Col>
       </Row>
-      {loading ? <div>Đang tìm kiếm...</div> : <div>{error}</div>}
-      <br />
+  
       <Table
-        dataSource={filteredData}
+        dataSource={userData}
         columns={columns}
         rowKey="id"
         onRow={(record, rowIndex) => {
@@ -275,7 +324,7 @@ const UserManagement = () => {
           <Form.Item name="name" label="Tên" rules={[{ required: true }]}>
             <Input
               value={stateUserDetails.name}
-              onChange={handleOnchangeDetails}
+              onChange={(e) => handleOnchangeDetails("name", e.target.value)}
               name="name"
             />
           </Form.Item>
@@ -286,7 +335,7 @@ const UserManagement = () => {
           >
             <Input
               value={stateUserDetails.email}
-              onChange={handleOnchangeDetails}
+              onChange={(e) => handleOnchangeDetails("email", e.target.value)}
               name="email"
             />
           </Form.Item>
@@ -297,7 +346,7 @@ const UserManagement = () => {
           >
             <Input
               value={stateUserDetails.phone}
-              onChange={handleOnchangeDetails}
+              onChange={(e) => handleOnchangeDetails("phone", e.target.value)}
               name="phone"
             />
           </Form.Item>
@@ -308,28 +357,28 @@ const UserManagement = () => {
           >
             <Input
               value={stateUserDetails.address}
-              onChange={handleOnchangeDetails}
+              onChange={(e) => handleOnchangeDetails("address", e.target.value)}
               name="address"
             />
           </Form.Item>
           <Form.Item name="role" label="Vai trò" rules={[{ required: true }]}>
             <Input
               value={stateUserDetails.role}
-              onChange={handleOnchangeDetails}
+              onChange={(e) => handleOnchangeDetails("role", e.target.value)}
               name="role"
             />
           </Form.Item>
           <Form.Item name="level" label="Cấp độ" rules={[{ required: true }]}>
             <Input
               value={stateUserDetails.level}
-              onChange={handleOnchangeDetails}
+              onChange={(e) => handleOnchangeDetails("level", e.target.value)}
               name="level"
             />
           </Form.Item>
           <Form.Item name="coin" label="Số xu" rules={[{ required: true }]}>
             <Input
               value={stateUserDetails.coin}
-              onChange={handleOnchangeDetails}
+              onChange={(e) => handleOnchangeDetails("coin", e.target.value)}
               name="coin"
             />
           </Form.Item>

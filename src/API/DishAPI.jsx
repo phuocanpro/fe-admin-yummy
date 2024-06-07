@@ -2,8 +2,8 @@ import axios from "axios";
 import axiosClient from "./axiosClient";
 
 const DishAPI = {
-  Get_All: () => {
-    const url = "/api/dish/getAll";
+  Get_All: (user_id) => {
+    const url = `/api/dish/getAll/${user_id}`;
     return axiosClient.get(url);
   },
 
