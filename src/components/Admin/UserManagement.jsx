@@ -311,7 +311,7 @@ const UserManagement = () => {
         }}
       />
       <Modal
-        title={rowSelected ? "Sửa người dùng" : "Thêm người dùng"}
+        title={"Thêm người dùng"}
         visible={isModalVisible}
         onCancel={handleCancel}
         footer={null}
