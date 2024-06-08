@@ -7,7 +7,15 @@ import OwnerDashboard from "./components/Owner/OwnerDashboard";
 import "../src/styles/styles.css";
 import RegisterRestaurant from "./components/Owner/RegisterRestaurant";
 import ForgotPassword from "./components/ForgotPassword";
+import  firebase  from '@firebase/app'
+import "firebase/firestore";
+import "firebase/auth";
 
+firebase.initializeApp({
+  apiKey: 'AIzaSyA7V0-xsvTjPXfbjGsMAssKayqneGNgFp0',
+  authDomain: 'yummy-app-262e1.firebaseapp.com',
+  projectId: 'yummy-app-262e1'
+});
 const App = () => {
   return (
     <Router>

@@ -4,68 +4,238 @@ import { orders, users, restaurants, orderItems } from "../../data/fakeData";
 import { CheckOutlined, SearchOutlined } from "@ant-design/icons";
 import moment from "moment";
 import "../../styles/styles.css";
+import firebase from '@firebase/app'
+import "firebase/firestore";
+import "firebase/auth";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
 
 const OrderManagement = () => {
   const [orderData, setOrderData] = useState([]);
- 
-  const [dates, setDates] = useState([]);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [rowSelected, setRowSelected] = useState("");
+  const [status, setStatus] = useState("");
+  const [length4, setLength4] = useState("");
+  const [length1, setLength1] = useState("");
+  const [length2, setLength2] = useState("");
+  const [length3, setLength3] = useState("");
+
+  var db = firebase.firestore();
+
+  //   db.collection("wait").get().then((querySnapshot) => {
+  //     querySnapshot.forEach((doc) => {
+  //     console.log(doc.id,"-", doc.data().name);
+  //     });
+  // });
 
   useEffect(() => {
-    filterData();
-  }, [statusFilter, dates]);
+    fetchWait();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = db.collection('wait').onSnapshot((snapshot) => {
+      // Cứ mỗi lần có sự thay đổi, chúng ta sẽ fetch lại dữ liệu
+      fetchWait();
+      fetchProcess();
+      fetchFinish();
+      fetchDelivery();
+      // Bạn cũng có thể cài đặt thông báo ở đây
+    });
+  
+    // Nhớ cleanup listener khi component unmount
+    return () => unsubscribe();
+  }, [])
+
+  useEffect(() => {
+    console.log(rowSelected);
+  }, [rowSelected]);
+
+  const updateOrderStatus = async (id, status) => {
+    try {
+      if (status === "") {
+
+      } else {
+
+        id = id.toString();
+
+        // Nhận doc trong collection 'wait' tương ứng với orderId
+        const orderRef = db.collection('wait').doc(id);
+
+        // Tiến hành update status= "Đang xử lý"
+        return orderRef.update({
+          status: status
+        })
+          .then(() => {
+            console.log("Document successfully updated!");
+          })
+          .catch((error) => {
+            // The document probably doesn't exist.
+            console.error("Error updating document: ", error);
+          });
+      }
+
+    } catch (error) {
+      console.error(`Failed to update order status: ${error}`);
+    }
+  };
+
+  const fetchFinish = async () => {
+    const data = await db.collection('wait').where('status', '==', 'Hoàn thành').get();
+    setOrderData(data.docs.map(doc => ({
+      id: doc.id,
+      customer: {
+        name: doc.data().customer.name,
+        address: doc.data().customer.address,
+      },
+      status: doc.data().status,
+      total: doc.data().total,
+      order_id: doc.data().order_id,
+      dishes: doc.data().dishes.map(dish => ({
+        name: dish.name,
+        options: dish.options,
+        price: dish.price,
+        quantity: dish.quantity
+      }))
+    })));
+    setLength4(data.docs.length);
+    setStatus("");
+  };
+
+  const fetchWait = async () => {
+    const data = await db.collection('wait').where('status', '==', 'Chưa xử lý').get();
+    setOrderData(data.docs.map(doc => ({
+      id: doc.id,
+      customer: {
+        name: doc.data().customer.name,
+        address: doc.data().customer.address,
+      },
+      status: doc.data().status,
+      total: doc.data().total,
+      order_id: doc.data().order_id,
+      dishes: doc.data().dishes.map(dish => ({
+        name: dish.name,
+        options: dish.options,
+        price: dish.price,
+        quantity: dish.quantity
+      }))
+    })));
+    setLength1(data.docs.length);
+    setStatus("Đang xử lý");
+  };
+
+  const fetchProcess = async () => {
+    const data = await db.collection('wait').where('status', '==', 'Đang xử lý').get();
+    setOrderData(data.docs.map(doc => ({
+      id: doc.id,
+      customer: {
+        name: doc.data().customer.name,
+        address: doc.data().customer.address,
+      },
+      status: doc.data().status,
+      total: doc.data().total,
+      order_id: doc.data().order_id,
+      dishes: doc.data().dishes.map(dish => ({
+        name: dish.name,
+        options: dish.options,
+        price: dish.price,
+        quantity: dish.quantity
+      }))
+    })));
+    setLength2(data.docs.length);
+    setStatus("Đang giao");
+  };
+
+  const fetchDelivery = async () => {
+    const data = await db.collection('wait').where('status', '==', 'Đang giao').get();
+    setOrderData(data.docs.map(doc => ({
+      id: doc.id,
+      customer: {
+        name: doc.data().customer.name,
+        address: doc.data().customer.address,
+      },
+      status: doc.data().status,
+      total: doc.data().total,
+      order_id: doc.data().order_id,
+      dishes: doc.data().dishes.map(dish => ({
+        name: dish.name,
+        options: dish.options,
+        price: dish.price,
+        quantity: dish.quantity
+      }))
+    })));
+    setLength3(data.docs.length);
+    setStatus("Đã giao");
+  };
+
+
+  const [dates, setDates] = useState([]);
 
   const handleDateChange = (dates) => {
     setDates(dates);
   };
 
   const handleSearchByDate = () => {
-    filterData();
-  };
-
-  const filterByStatus = (status) => {
-    setStatusFilter(status);
-  };
-
-  const filterData = () => {
-    let filtered = orderItems; 
-
-    if (dates.length === 2) {
-      const [start, end] = dates;
-      filtered = filtered.filter((order) => {
-        const createdAt = moment(
-          orders.find((o) => o.id === order.order_id).createdAt
-        );
-        return createdAt.isBetween(start, end, "days", "[]");
-      });
-    }
-
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((order) => order.status === statusFilter);
-    }
-
-    // setFilteredData(filtered);
+    // if (dates.length === 2) {
+    //   const [start, end] = dates;
+    //   const filtered = orderData.filter((user) => {
+    //     const createdAt = moment(user.created_at);
+    //     return createdAt.isBetween(start, end, "days", "[]");
+    //   });
+    //   orderData(filtered);
+    // }
   };
 
   const columns = [
-    { title: "Order ID", dataIndex: "order_id", key: "order_id" },
-    { title: "Quantity", dataIndex: "quantity", key: "quantity" },
-    { title: "Options", dataIndex: "options", key: "options" },
-    { title: "Payment", dataIndex: "payment", key: "payment" },
+    { title: "ID", dataIndex: "order_id", key: "order_id", width: '5%' },
     {
-      title: "Tổng tiền",
-      dataIndex: "order_id",
-      key: "total_amount",
-      render: (order_id) =>
-        orders.find((o) => o.id === order_id)?.total_amount || "N/A",
+      title: "Khách Hàng", dataIndex: "customer", key: "customer",
+      render: (text, record) => (
+        <div style={{ marginBottom: "5px" }}>
+          <p>
+            <strong>Tên khách hàng:</strong> {record.customer.name}
+          </p>
+          <p>
+            <strong>Địa chỉ:</strong> {record.customer.address}
+          </p>
+        </div>
+      ),
+      width: '35%'
     },
     {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
+      title: "Tổng Tiền",
+      dataIndex: "total",
+      key: "total",
+      width: '5%'
+    },
+    {
+      title: "Các món ăn",
+      dataIndex: "dishes",
+      key: "dishes",
+      render: dishes => (
+        <ul>
+          {dishes.map((dish, index) => (
+
+
+            <div key={index} style={{ marginBottom: "5px" }}>
+              <p>
+                <strong>Tên món:</strong> {dish.name}
+              </p>
+              <p>
+                <strong>Giá:</strong> {dish.price}
+              </p>
+              <p>
+                <strong>Số lượng:</strong> {dish.quantity}
+              </p>
+              <p>
+                <strong>Ghi chú:</strong> {dish.options}
+              </p>
+              <br></br>
+            </div>
+
+          ))}
+        </ul>
+      ),
+      width: '35%'
     },
     {
       title: "Hành động",
@@ -74,11 +244,12 @@ const OrderManagement = () => {
         <Button
           className="confirm-button"
           icon={<CheckOutlined />}
-          onClick={() => console.log("Xác nhận đơn hàng", record)}
+          onClick={() => updateOrderStatus(rowSelected, status)}
         >
           Xác nhận
         </Button>
       ),
+      width: '10%'
     },
   ];
 
@@ -117,49 +288,54 @@ const OrderManagement = () => {
       </Row>
       <Row gutter={[16, 16]} style={{ marginBottom: "32px" }}>
         <Col span={6}>
-          <Card className="status-card" onClick={() => filterByStatus("all")}>
-            <Text className="status-title">Tất cả</Text>
-            <Text className="status-count">{orderData.length} đơn hàng</Text>
-          </Card>
-        </Col>
-        <Col span={6}>
           <Card
             className="status-card"
-            onClick={() => filterByStatus("chưa giao")}
+            onClick={() => fetchWait()}
           >
-            <Text className="status-title">Chưa giao</Text>
+            <Text className="status-title">Chưa tiếp nhận</Text>
             <Text className="status-count">
-              {orderData.filter((order) => order.status === "chưa giao").length}{" "}
-              đơn hàng
+              {length1 && `${length1} đơn hàng`}
             </Text>
           </Card>
         </Col>
         <Col span={6}>
           <Card
             className="status-card"
-            onClick={() => filterByStatus("đang giao")}
+            onClick={() => fetchProcess()}
+          >
+            <Text className="status-title">Đang tiếp nhận</Text>
+            <Text className="status-count">
+              {length2 && `${length2} đơn hàng`}
+            </Text>
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card
+            className="status-card"
+            onClick={() => fetchDelivery()}
           >
             <Text className="status-title">Đang giao</Text>
             <Text className="status-count">
-              {orderData.filter((order) => order.status === "đang giao").length}{" "}
-              đơn hàng
+              {length3 && `${length3} đơn hàng`}
             </Text>
           </Card>
         </Col>
         <Col span={6}>
-          <Card
-            className="status-card"
-            onClick={() => filterByStatus("đã giao")}
-          >
-            <Text className="status-title">Đã giao</Text>
+          <Card className="status-card" onClick={() => fetchFinish()}>
+            <Text className="status-title">Đã hoàn thành</Text>
             <Text className="status-count">
-              {orderData.filter((order) => order.status === "đã giao").length}{" "}
-              đơn hàng
+            {length4 && `${length4} đơn hàng`}
             </Text>
           </Card>
         </Col>
       </Row>
-      {/* <Table dataSource={filteredData} columns={columns} rowKey="order_id" /> */}
+      <Table dataSource={orderData} columns={columns} rowKey="id" onRow={(record, rowIndex) => {
+        return {
+          onClick: (event) => {
+            setRowSelected(record.id);
+          },
+        };
+      }} />
     </div>
   );
 };
