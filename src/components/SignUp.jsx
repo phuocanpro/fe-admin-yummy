@@ -25,6 +25,7 @@ const SignUp = () => {
         }
       } else {
         if (role === "restaurant") {
+          localStorage.setItem("userId", response.user.id);
           navigate("/register-restaurant");
         } else {
           navigate("/login");

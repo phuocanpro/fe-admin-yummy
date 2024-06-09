@@ -15,12 +15,14 @@ const RegisterRestaurant = () => {
       "HH:mm"
     )} - ${moment(openingHours[1]).format("HH:mm")}`;
 
+    const idUser = localStorage.getItem('userId');
+
     const data = {
       name: restaurantName,
       phone,
       address,
       opening_hours: formattedOpeningHours,
-      user_id: 1,
+      user_id: idUser,
     };
 
     try {

@@ -51,6 +51,9 @@ const OrderManagement = () => {
     };
    
     fetchData();
+    fetchProcess();
+    fetchFinish();
+    fetchDelivery();
     fetchWait();
   }, []);
 
@@ -103,22 +106,24 @@ const OrderManagement = () => {
 
   const fetchFinish = async () => {
     const data = await db.collection('wait').where('status', '==', 'Hoàn thành').where('res_id', '==', infoData.id).get();
-    setOrderData(data.docs.map(doc => ({
-      id: doc.id,
-      customer: {
-        name: doc.data().customer.name,
-        address: doc.data().customer.address,
-      },
-      status: doc.data().status,
-      total: doc.data().total,
-      order_id: doc.data().order_id,
-      dishes: doc.data().dishes.map(dish => ({
-        name: dish.name,
-        options: dish.options,
-        price: dish.price,
-        quantity: dish.quantity
-      }))
-    })));
+    if (orderData){
+      setOrderData(data.docs.map(doc => ({
+        id: doc.id,
+        customer: {
+          name: doc.data().customer.name,
+          address: doc.data().customer.address,
+        },
+        status: doc.data().status,
+        total: doc.data().total,
+        order_id: doc.data().order_id,
+        dishes: doc.data().dishes.map(dish => ({
+          name: dish.name,
+          options: dish.options,
+          price: dish.price,
+          quantity: dish.quantity
+        }))
+      })));
+    }
     setLength4(data.docs.length);
     setStatus("");
   };
@@ -147,7 +152,32 @@ const OrderManagement = () => {
 
   const fetchProcess = async () => {
     const data = await db.collection('wait').where('status', '==', 'Đang xử lý').where('res_id', '==', infoData.id).get();
-    setOrderData(data.docs.map(doc => ({
+    if (orderData){
+      setOrderData(data.docs.map(doc => ({
+        id: doc.id,
+        customer: {
+          name: doc.data().customer.name,
+          address: doc.data().customer.address,
+        },
+        status: doc.data().status,
+        total: doc.data().total,
+        order_id: doc.data().order_id,
+        dishes: doc.data().dishes.map(dish => ({
+          name: dish.name,
+          options: dish.options,
+          price: dish.price,
+          quantity: dish.quantity
+        }))
+      })));
+    }
+    setLength2(data.docs.length);
+    setStatus("Đang giao");
+  };
+
+  const fetchDelivery = async () => {
+    const data = await db.collection('wait').where('status', '==', 'Đang giao').where('res_id', '==', infoData.id).get();
+    if (orderData){
+       setOrderData(data.docs.map(doc => ({
       id: doc.id,
       customer: {
         name: doc.data().customer.name,
@@ -163,12 +193,7 @@ const OrderManagement = () => {
         quantity: dish.quantity
       }))
     })));
-    setLength2(data.docs.length);
-    setStatus("Đang giao");
-  };
-
-  const fetchDelivery = async () => {
-    const data = await db.collection('wait').where('status', '==', 'Đang giao').where('res_id', '==', infoData.id).get();
+    }
     setOrderData(data.docs.map(doc => ({
       id: doc.id,
       customer: {

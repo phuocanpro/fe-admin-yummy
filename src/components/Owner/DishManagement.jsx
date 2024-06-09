@@ -46,7 +46,9 @@ const DishManagement = () => {
   const idUser = localStorage.getItem('userId');
 
   const getAllDishes = async () => {
+    console.log(idUser);
     const res = DishAPI.Get_All(idUser);
+    console.log("res", res);
     return res;
   };
 
