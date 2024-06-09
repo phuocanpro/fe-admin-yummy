@@ -28,6 +28,7 @@ const OrderManagement = () => {
     phone: "",
     address: "",
     opening_hours: "",
+    method: "",
   });
 
 
@@ -80,6 +81,7 @@ const OrderManagement = () => {
       if (status === "") {
 
       } else {
+        console.log("id",id.toString(), " ", status);
 
         id = id.toString();
 
@@ -121,7 +123,8 @@ const OrderManagement = () => {
           options: dish.options,
           price: dish.price,
           quantity: dish.quantity
-        }))
+        })),
+        method: doc.data().method = 0 ? "Tiền mặt" : "Trực tuyến"
       })));
     }
     setLength4(data.docs.length);
@@ -144,7 +147,8 @@ const OrderManagement = () => {
         options: dish.options,
         price: dish.price,
         quantity: dish.quantity
-      }))
+      })),
+      method: doc.data().method = 0 ? "Tiền mặt" : "Trực tuyến"
     })));
     setLength1(data.docs.length);
     setStatus("Đang xử lý");
@@ -167,7 +171,8 @@ const OrderManagement = () => {
           options: dish.options,
           price: dish.price,
           quantity: dish.quantity
-        }))
+        })),
+        method: doc.data().method = 0 ? "Tiền mặt" : "Trực tuyến"
       })));
     }
     setLength2(data.docs.length);
@@ -191,7 +196,8 @@ const OrderManagement = () => {
         options: dish.options,
         price: dish.price,
         quantity: dish.quantity
-      }))
+      })),
+      method: doc.data().method = 0 ? "Tiền mặt" : "Trực tuyến"
     })));
     }
     setOrderData(data.docs.map(doc => ({
@@ -208,10 +214,11 @@ const OrderManagement = () => {
         options: dish.options,
         price: dish.price,
         quantity: dish.quantity
-      }))
+      })),
+      method: doc.data().method == 0 ? "Tiền mặt" : "Trực tuyến"
     })));
     setLength3(data.docs.length);
-    setStatus("Đã giao");
+    setStatus("Hoàn thành");
   };
 
 
@@ -255,6 +262,12 @@ const OrderManagement = () => {
       width: '5%'
     },
     {
+      title: "Phương thức",
+      dataIndex: "method",
+      key: "method",
+      width: '5%'
+    },
+    {
       title: "Các món ăn",
       dataIndex: "dishes",
       key: "dishes",
@@ -282,7 +295,7 @@ const OrderManagement = () => {
           ))}
         </ul>
       ),
-      width: '35%'
+      width: '30%'
     },
     {
       title: "Hành động",
