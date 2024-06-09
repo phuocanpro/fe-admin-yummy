@@ -7,6 +7,7 @@ import "../../styles/styles.css";
 import firebase from '@firebase/app'
 import "firebase/firestore";
 import "firebase/auth";
+import RestaurantAPI from "../../API/RestaurantAPI";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -19,16 +20,37 @@ const OrderManagement = () => {
   const [length1, setLength1] = useState("");
   const [length2, setLength2] = useState("");
   const [length3, setLength3] = useState("");
-
   var db = firebase.firestore();
 
-  //   db.collection("wait").get().then((querySnapshot) => {
-  //     querySnapshot.forEach((doc) => {
-  //     console.log(doc.id,"-", doc.data().name);
-  //     });
-  // });
+  const [infoData, setInfoData] = useState({
+    id: "",
+    name: "",
+    phone: "",
+    address: "",
+    opening_hours: "",
+  });
+
+
+  const idUser = localStorage.getItem('userId');
+
+
+  const getItem = async () => {
+    const res = RestaurantAPI.Get_Item_Owner(idUser);
+    return res;
+  };
+
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getItem();
+          setInfoData(data);
+      } catch (error) {
+        console.log("err", error);
+      }
+    };
+   
+    fetchData();
     fetchWait();
   }, []);
 
@@ -80,7 +102,7 @@ const OrderManagement = () => {
   };
 
   const fetchFinish = async () => {
-    const data = await db.collection('wait').where('status', '==', 'Hoàn thành').get();
+    const data = await db.collection('wait').where('status', '==', 'Hoàn thành').where('res_id', '==', infoData.id).get();
     setOrderData(data.docs.map(doc => ({
       id: doc.id,
       customer: {
@@ -102,7 +124,7 @@ const OrderManagement = () => {
   };
 
   const fetchWait = async () => {
-    const data = await db.collection('wait').where('status', '==', 'Chưa xử lý').get();
+    const data = await db.collection('wait').where('status', '==', 'Chưa xử lý').where('res_id', '==', infoData.id).get();
     setOrderData(data.docs.map(doc => ({
       id: doc.id,
       customer: {
@@ -124,7 +146,7 @@ const OrderManagement = () => {
   };
 
   const fetchProcess = async () => {
-    const data = await db.collection('wait').where('status', '==', 'Đang xử lý').get();
+    const data = await db.collection('wait').where('status', '==', 'Đang xử lý').where('res_id', '==', infoData.id).get();
     setOrderData(data.docs.map(doc => ({
       id: doc.id,
       customer: {
@@ -146,7 +168,7 @@ const OrderManagement = () => {
   };
 
   const fetchDelivery = async () => {
-    const data = await db.collection('wait').where('status', '==', 'Đang giao').get();
+    const data = await db.collection('wait').where('status', '==', 'Đang giao').where('res_id', '==', infoData.id).get();
     setOrderData(data.docs.map(doc => ({
       id: doc.id,
       customer: {

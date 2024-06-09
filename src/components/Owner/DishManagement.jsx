@@ -54,7 +54,10 @@ const DishManagement = () => {
     const fetchData = async () => {
       try {
         const data = await getAllDishes();
-        setDishData(data);
+        if (data) {
+          setDishData(data);
+        }
+      
       } catch (error) {
         console.log("err", error);
       }
@@ -91,7 +94,7 @@ const DishManagement = () => {
   const handleAddOrUpdateDish = async () => {
     if (rowSelected) {
       const res = await DishAPI.Put(stateDetails);
-      if (res.status === "SUCCESS") {
+      if (res.status === "success") {
         console.log("dong");
         handleCancel();
       }
@@ -103,15 +106,17 @@ const DishManagement = () => {
         restaurant_id: restaurant[0].id,
       });
       const res = await DishAPI.Create(stateDetails);
-      if (res.status === "SUCCESS") {
+      if (res.status === "success") {
         handleCancel();
       }
     }
   };
 
   const handleDeleteDish = async () => {
-    const res = await RestaurantAPI.Delete(rowSelected);
-    if (res.status === "SUCCESS") {
+    const res = await DishAPI.Delete(rowSelected);
+    
+    if (res.status === "success") {
+      setRowSelected("");
       handleCancel();
     }
   };
