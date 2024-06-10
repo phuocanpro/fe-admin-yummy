@@ -45,6 +45,7 @@ const OrderAllManagement = () => {
       try {
         const data = await getAllOrders();
         setOrderData(data);
+        console.log(data);
       } catch (error) {
         console.log("err", error);
       }

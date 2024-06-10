@@ -11,7 +11,7 @@ import dishIcon from "../../assets/images/dish-icon.png";
 import logoutIcon from "../../assets/images/logout-icon.png"; // Ensure you have a logout icon
 import OrderAllManagement from "./OrderAllManagement";
 import { useSelector } from "react-redux";
-
+import ChartManagement from "./ChartManagement";
 const AdminDashboard = () => {
   const [activeComponent, setActiveComponent] = useState("UserManagement");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -36,6 +36,9 @@ const AdminDashboard = () => {
         return <RestaurantManagement />;
       case "OrderAllManagement":
         return <OrderAllManagement />;
+      case "ChartManagement":
+        return <ChartManagement/>;
+  
       default:
         return <UserManagement />;
     }
@@ -79,6 +82,14 @@ const AdminDashboard = () => {
               className="sidebar-icon"
             />{" "}
             Quản lý quán ăn
+          </button>
+          <button onClick={() => setActiveComponent("ChartManagement")}>
+            <img
+              src={restaurantIcon}
+              alt="Restaurant Icon"
+              className="sidebar-icon"
+            />{" "}
+            Biểu đồ 
           </button>
         </div>
         <div className="content">{renderComponent()}</div>
