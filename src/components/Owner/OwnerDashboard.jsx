@@ -12,7 +12,6 @@ import reviewIcon from "../../assets/images/review-icon.png";
 import logoutIcon from "../../assets/images/logout-icon.png";
 import chartIcon from "../../assets/images/chart-icon.png";
 import infoIcon from "../../assets/images/info-icon.png";
-import chartIcon from "../../assets/images/chart-icon.png";
 import Chartow from "./Chartow";
 
 const OwnerDashboard = () => {

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, DatePicker, Row, Col, Typography, Card } from "antd";
 import { orders, users, restaurants, orderItems } from "../../data/fakeData";
-import { CheckOutlined, SearchOutlined } from "@ant-design/icons";
+import { CheckOutlined, SearchOutlined, FileOutlined } from "@ant-design/icons";
 import moment from "moment";
 import "../../styles/styles.css";
 import firebase from '@firebase/app'
 import "firebase/firestore";
 import "firebase/auth";
 import RestaurantAPI from "../../API/RestaurantAPI";
+import jsPDF from "jspdf";
+import 'jspdf-autotable';
+
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -239,6 +242,30 @@ const OrderManagement = () => {
     // }
   };
 
+  const generatePDF = (record) => {
+    const doc = new jsPDF();
+  
+    doc.text("Order Details", 20, 10);
+    doc.autoTable({
+      startY: 20,
+      head: [['Name', 'Address', 'Status', 'Total', 'Order ID']],
+      body: [
+        [record.customer.name, record.customer.address, record.status, record.total, record.order_id]
+      ]
+    });
+  
+    doc.text("Dishes", 20, doc.previousAutoTable.finalY + 10);
+    const dishData = record.dishes.map(dish => [dish.name, dish.price, dish.quantity, dish.options]);
+    doc.autoTable({
+      startY: doc.previousAutoTable.finalY + 20,
+      head: [['Dish Name', 'Price', 'Quantity', 'Options']],
+      body: dishData
+    });
+  
+    doc.save(`order_${record.order_id}.pdf`);
+  };
+
+  
   const columns = [
     { title: "ID", dataIndex: "order_id", key: "order_id", width: '5%' },
     {
@@ -301,6 +328,7 @@ const OrderManagement = () => {
       title: "Hành động",
       key: "actions",
       render: (text, record) => (
+        <>
         <Button
           className="confirm-button"
           icon={<CheckOutlined />}
@@ -308,6 +336,17 @@ const OrderManagement = () => {
         >
           Xác nhận
         </Button>
+        {record.status === "Đang giao" && (
+          <Button
+            className="pdf-button"
+            icon={<FileOutlined />}
+            onClick={() => generatePDF(record)}
+            style={{ marginLeft: 8 }}
+          >
+            In PDF
+          </Button>
+        )}
+      </>
       ),
       width: '10%'
     },
