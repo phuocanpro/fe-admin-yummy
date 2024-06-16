@@ -10,6 +10,7 @@ import menuIcon from "../../assets/images/menu-icon.png";
 import orderIcon from "../../assets/images/order-icon.png";
 import reviewIcon from "../../assets/images/review-icon.png";
 import logoutIcon from "../../assets/images/logout-icon.png";
+import chartIcon from "../../assets/images/chart-icon.png";
 import infoIcon from "../../assets/images/info-icon.png";
 import chartIcon from "../../assets/images/chart-icon.png";
 import Chartow from "./Chartow";
@@ -19,7 +20,7 @@ const OwnerDashboard = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
 
-  const idUser = localStorage.getItem('userId');
+  const idUser = localStorage.getItem("userId");
 
   useEffect(() => {
     try {
@@ -40,8 +41,8 @@ const OwnerDashboard = () => {
         return <ReviewManagement />;
       case "InforManagement":
         return <InforManagement />;
-        case "Chartow":
-          return <Chartow/>;
+      case "Chartow":
+        return <Chartow />;
       default:
         return <DishManagement />;
     }
@@ -91,7 +92,8 @@ const OwnerDashboard = () => {
             lý thông tin
           </button>
           <button onClick={() => setActiveComponent("Chartow")}>
-            <img src={chartIcon} alt="Chart Icon" className="sidebar-icon" /> Biểu Đồ
+            <img src={chartIcon} alt="Chart Icon" className="sidebar-icon" />{" "}
+            Biểu Đồ
           </button>
         </div>
         <div className="content">{renderComponent()}</div>

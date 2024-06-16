@@ -32,12 +32,16 @@ export const Chartow = () => {
       setDishAmount(dishResponse);
 
       // Khi tất cả dữ liệu đã được lấy, bạn cũng có thể in ra toàn bộ chart data
-      setChart([...revenueResponse, ...orderResponse, ...ratingResponse,...dishResponse]);
+      setChart([
+        ...revenueResponse,
+        ...orderResponse,
+        ...ratingResponse,
+        ...dishResponse,
+      ]);
       console.log("Chart Data:", chart);
     };
 
     fetchChartData();
-
   }, []);
 
   const chartData = [
@@ -111,24 +115,25 @@ export const Chartow = () => {
     { name: "Ba sao", St: 0 },
     { name: "Bốn sao", St: 0 },
     { name: "Năm sao", St: 0 },
-    ];
-    for (let index = 0; index < chartData2.length; index++) {
-        for (let i = 0; i < chart.length; i++) {
-          if (chart[i]["name"] === index+1) { // Changed from index + 1 to index
-            chartData2[index]["St"] = chart[i]["count"];
-          }
-        }
+  ];
+  for (let index = 0; index < chartData2.length; index++) {
+    for (let i = 0; i < chart.length; i++) {
+      if (chart[i]["name"] === index + 1) {
+        // Changed from index + 1 to index
+        chartData2[index]["St"] = chart[i]["count"];
       }
-      console.log("chartData2:", chartData2);
+    }
+  }
+  console.log("chartData2:", chartData2);
 
-      const chartData4 = dishAmount.map((dish, index) => {
-        return {
-          name: dish.name,
-          St: parseInt(dish.total_quantity)
-        };
-      });
+  const chartData4 = dishAmount.map((dish, index) => {
+    return {
+      name: dish.name,
+      St: parseInt(dish.total_quantity),
+    };
+  });
 
-      console.log("Chart Data 4:", chartData4);
+  console.log("Chart Data 4:", chartData4);
 
   return (
     <div style={{ flex: 3 }}>
@@ -139,22 +144,10 @@ export const Chartow = () => {
         <Chart data={chartData1} title="Đơn Hàng" grid dataKey="Sale" />
       )}
       {chartData2 && (
-        <Chart
-          data={chartData2}
-          title="Đánh Giá"
-          grid
-          dataKey="St"
-          pie
-        />
+        <Chart data={chartData2} title="Đánh Giá" grid dataKey="St" pie />
       )}
       {chartData4 && (
-        <Chart
-          data={chartData4}
-          title="Món ăn"
-          grid
-          dataKey="St"
-          pie
-        />
+        <Chart data={chartData4} title="Món ăn" grid dataKey="St" pie />
       )}
     </div>
   );

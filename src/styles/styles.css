@@ -9,6 +9,12 @@ body {
   align-items: center;
 }
 
+.chart-container {
+  padding: 20px;
+  background: #f0f2f5;
+  border-radius: 8px;
+}
+
 .owner-container {
   padding: 20px;
 }

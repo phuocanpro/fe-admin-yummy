@@ -43,7 +43,7 @@ const DishManagement = () => {
   const [rowSelected, setRowSelected] = useState("");
   const [dates, setDates] = useState([]);
 
-  const idUser = localStorage.getItem('userId');
+  const idUser = localStorage.getItem("userId");
 
   const getAllDishes = async () => {
     console.log(idUser);
@@ -59,7 +59,6 @@ const DishManagement = () => {
         if (data) {
           setDishData(data);
         }
-      
       } catch (error) {
         console.log("err", error);
       }
@@ -117,13 +116,12 @@ const DishManagement = () => {
 
   const handleDeleteDish = async () => {
     const res = await DishAPI.Delete(rowSelected);
-    
+
     if (res.status === "success") {
       setRowSelected("");
       handleCancel();
     }
   };
-
 
   const handleDateChange = (dates) => {
     setDates(dates);
@@ -137,7 +135,6 @@ const DishManagement = () => {
         return createdAt.isBetween(start, end, "days", "[]");
       });
       setDishData(filtered);
-      
     }
   };
 
@@ -260,27 +257,27 @@ const DishManagement = () => {
       dataIndex: "name",
       sorter: (a, b) => a.name.length - b.name.length,
       ...getColumnSearchProps("name"),
-      key: "name"
+      key: "name",
     },
     {
       title: "Giá",
       dataIndex: "price",
       sorter: (a, b) => a.price - b.price,
       ...getColumnSearchProps("price"),
-      key: "price"
+      key: "price",
     },
     {
       title: "Đánh giá",
       dataIndex: "rate",
       sorter: (a, b) => a.rate - b.rate,
       ...getColumnSearchProps("rate"),
-      key: "rate"
+      key: "rate",
     },
     {
       title: "Loại",
       dataIndex: "type",
       ...getColumnSearchProps("type"),
-      key: "type"
+      key: "type",
     },
     {
       title: "Hành động",
@@ -341,7 +338,7 @@ const DishManagement = () => {
           </Button>
         </Col>
       </Row>
-    
+
       <Table
         dataSource={dishData}
         columns={columns}

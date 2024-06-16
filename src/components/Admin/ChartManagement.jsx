@@ -8,39 +8,45 @@ import {
 } from "@ant-design/icons";
 import { users } from "../../data/fakeData";
 import "../../styles/styles.css";
-import Chart from './chart/Chart';
+import Chart from "./chart/Chart";
 import { PieChart } from "recharts";
 import ChartAPI from "../../API/ChartAPI";
 export const ChartManagement = () => {
-    let date = new Date().toJSON().slice(0, 10);
+  let date = new Date().toJSON().slice(0, 10);
   const [chart, setChart] = useState([]);
-const [revenueData, setRevenueData] = useState([]);
+  const [revenueData, setRevenueData] = useState([]);
   const [orderData, setOrderData] = useState([]);
   const [ratingData, setRatingData] = useState([]);
   const [registerCount, setRegisterCount] = useState([]);
 
   useEffect(() => {
     const fetchChartData = async () => {
-        const revenueResponse = await ChartAPI.Get_revenueByMonth();
-        console.log("Revenue Response:", revenueResponse);
-        setRevenueData(revenueResponse);
-    
-        const orderResponse = await ChartAPI.Get_totalOrderByWeekday();
-        console.log("Order Response:", orderResponse);
-        setOrderData(orderResponse);
-    
-        const ratingResponse = await ChartAPI.Get_totalRating();
-        console.log("Rating Response:", ratingResponse);
-        setRatingData(ratingResponse);
-    
-        const registerResponse = await ChartAPI.countRegister();
-        console.log("Register Response:", registerResponse);
-        setRegisterCount(registerResponse);
-    
-        // Khi tất cả dữ liệu đã được lấy, bạn cũng có thể in ra toàn bộ chart data
-        setChart([...revenueResponse, ...orderResponse, ...ratingResponse, ...registerResponse])
-        console.log("Chart Data:", chart); };
-    
+      const revenueResponse = await ChartAPI.Get_revenueByMonth();
+      console.log("Revenue Response:", revenueResponse);
+      setRevenueData(revenueResponse);
+
+      const orderResponse = await ChartAPI.Get_totalOrderByWeekday();
+      console.log("Order Response:", orderResponse);
+      setOrderData(orderResponse);
+
+      const ratingResponse = await ChartAPI.Get_totalRating();
+      console.log("Rating Response:", ratingResponse);
+      setRatingData(ratingResponse);
+
+      const registerResponse = await ChartAPI.countRegister();
+      console.log("Register Response:", registerResponse);
+      setRegisterCount(registerResponse);
+
+      // Khi tất cả dữ liệu đã được lấy, bạn cũng có thể in ra toàn bộ chart data
+      setChart([
+        ...revenueResponse,
+        ...orderResponse,
+        ...ratingResponse,
+        ...registerResponse,
+      ]);
+      console.log("Chart Data:", chart);
+    };
+
     fetchChartData();
     // setChart([...revenueData, ...orderData, ...ratingData, ...registerCount])
   }, []);
@@ -59,13 +65,13 @@ const [revenueData, setRevenueData] = useState([]);
     { name: "Dec", Sales: 0 },
   ];
   const chartData1 = [
-  { name: "Monday", Sale: 0 },
-  { name: "Tuesday", Sale: 0 },
-  { name: "Wednesday", Sale: 0 },
-  { name: "Thursday", Sale: 0 },
-  { name: "Friday", Sale: 0 },
-  { name: "Saturday", Sale: 0 },
-  { name: "Sunday", Sale: 0 },
+    { name: "Monday", Sale: 0 },
+    { name: "Tuesday", Sale: 0 },
+    { name: "Wednesday", Sale: 0 },
+    { name: "Thursday", Sale: 0 },
+    { name: "Friday", Sale: 0 },
+    { name: "Saturday", Sale: 0 },
+    { name: "Sunday", Sale: 0 },
   ];
   const chartData2 = [
     { name: "Một sao", St: 0 },
@@ -73,17 +79,39 @@ const [revenueData, setRevenueData] = useState([]);
     { name: "Ba sao", St: 0 },
     { name: "Bốn sao", St: 0 },
     { name: "Năm sao", St: 0 },
-    ];
-    for (let index = 0; index < chartData2.length; index++) {
-        for (let i = 0; i < chart.length; i++) {
-          if (chart[i]["name"] === index+1) { // Changed from index + 1 to index
-            chartData2[index]["St"] = chart[i]["count"];
-          }
-        }
+  ];
+  for (let index = 0; index < chartData2.length; index++) {
+    for (let i = 0; i < chart.length; i++) {
+      if (chart[i]["name"] === index + 1) {
+        // Changed from index + 1 to index
+        chartData2[index]["St"] = chart[i]["count"];
       }
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  
+    }
+  }
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const dayNames = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
   for (let index = 0; index < chartData.length; index++) {
     for (let i = 0; i < chart.length; i++) {
       // Chuyển đổi số tháng từ API thành tên tháng
@@ -101,13 +129,20 @@ const [revenueData, setRevenueData] = useState([]);
     }
   }
 
-  
   return (
     <div style={{ flex: 4 }}>
-    {chartData&& <Chart data={chartData} title="Doanh Thu" grid dataKey="Sales" />}
-{chartData1 && <Chart data={chartData1} title="Đơn Hàng" grid dataKey="Sale" />}
-{chartData2 && <Chart data={chartData2} title="Đánh Giá" grid dataKey="St" pie />}
-{registerCount && <Chart data={registerCount} title="Đăng Kí" grid dataKey="Se" pie />}
+      {chartData && (
+        <Chart data={chartData} title="Doanh Thu" grid dataKey="Sales" />
+      )}
+      {chartData1 && (
+        <Chart data={chartData1} title="Đơn Hàng" grid dataKey="Sale" />
+      )}
+      {chartData2 && (
+        <Chart data={chartData2} title="Đánh Giá" grid dataKey="St" pie />
+      )}
+      {registerCount && (
+        <Chart data={registerCount} title="Đăng Kí" grid dataKey="Se" pie />
+      )}
     </div>
   );
 };
