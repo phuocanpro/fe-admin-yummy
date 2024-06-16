@@ -25,8 +25,6 @@ const UserManagement = () => {
     role: "",
     phone: "",
     address: "",
-    level: "",
-    coin: "",
   });
   const [rowSelected, setRowSelected] = useState("");
 
@@ -64,8 +62,6 @@ const UserManagement = () => {
       role: response?.role,
       phone: response?.phone,
       address: response?.address,
-      level: response?.level,
-      coin: response?.coin,
     });
   };
 
@@ -128,8 +124,6 @@ const UserManagement = () => {
       role: "",
       phone: "",
       address: "",
-      level: "",
-      coin: "",
     });
     form.resetFields();
     setRowSelected("");
@@ -241,12 +235,6 @@ const UserManagement = () => {
      },
     { title: "Vai trò", dataIndex: "role", key: "role",
       ...getColumnSearchProps("role")
-     },
-    { title: "Cấp độ", dataIndex: "level", key: "level",
-      ...getColumnSearchProps("level")
-    },
-    { title: "Số xu", dataIndex: "coin", key: "coin",
-      ...getColumnSearchProps("coin")
      },
     {
       title: "Hành động",
@@ -366,20 +354,6 @@ const UserManagement = () => {
               value={stateUserDetails.role}
               onChange={(e) => handleOnchangeDetails("role", e.target.value)}
               name="role"
-            />
-          </Form.Item>
-          <Form.Item name="level" label="Cấp độ" rules={[{ required: true }]}>
-            <Input
-              value={stateUserDetails.level}
-              onChange={(e) => handleOnchangeDetails("level", e.target.value)}
-              name="level"
-            />
-          </Form.Item>
-          <Form.Item name="coin" label="Số xu" rules={[{ required: true }]}>
-            <Input
-              value={stateUserDetails.coin}
-              onChange={(e) => handleOnchangeDetails("coin", e.target.value)}
-              name="coin"
             />
           </Form.Item>
           <Button className="pink-button" type="primary" htmlType="submit">

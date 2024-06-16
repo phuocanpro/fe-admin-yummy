@@ -107,6 +107,7 @@ const DishManagement = () => {
         ...stateDetails,
         restaurant_id: restaurant[0].id,
       });
+      console.log(stateDetails);
       const res = await DishAPI.Create(stateDetails);
       if (res.status === "success") {
         handleCancel();
