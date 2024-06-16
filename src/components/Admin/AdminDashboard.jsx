@@ -8,16 +8,18 @@ import AdminIcon from "../../assets/images/admin-icon.png";
 import userIcon from "../../assets/images/user-icon.png";
 import restaurantIcon from "../../assets/images/restaurant-icon.png";
 import dishIcon from "../../assets/images/dish-icon.png";
-import logoutIcon from "../../assets/images/logout-icon.png"; // Ensure you have a logout icon
+import logoutIcon from "../../assets/images/logout-icon.png";
+import chartIcon from "../../assets/images/chart-icon.png";
 import OrderAllManagement from "./OrderAllManagement";
 import { useSelector } from "react-redux";
+import ChartManagement from "./ChartManagement";
 
 const AdminDashboard = () => {
   const [activeComponent, setActiveComponent] = useState("UserManagement");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
 
-  const idUser = localStorage.getItem('userId');
+  const idUser = localStorage.getItem("userId");
 
   useEffect(() => {
     try {
@@ -36,13 +38,15 @@ const AdminDashboard = () => {
         return <RestaurantManagement />;
       case "OrderAllManagement":
         return <OrderAllManagement />;
+      case "ChartManagement":
+        return <ChartManagement />;
       default:
         return <UserManagement />;
     }
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('userId');
+    localStorage.removeItem("userId");
     setShowLogoutModal(false);
     navigate("/login");
   };
@@ -64,7 +68,7 @@ const AdminDashboard = () => {
       </header>
       <div className="dashboard-content">
         <div className="sidebar">
-        <button onClick={() => setActiveComponent("OrderAllManagement")}>
+          <button onClick={() => setActiveComponent("OrderAllManagement")}>
             <img src={dishIcon} alt="Dish Icon" className="sidebar-icon" /> Quản
             lý đơn hàng
           </button>
@@ -79,6 +83,10 @@ const AdminDashboard = () => {
               className="sidebar-icon"
             />{" "}
             Quản lý quán ăn
+          </button>
+          <button onClick={() => setActiveComponent("ChartManagement")}>
+            <img src={chartIcon} alt="Chart Icon" className="sidebar-icon" />{" "}
+            Biểu đồ
           </button>
         </div>
         <div className="content">{renderComponent()}</div>
