@@ -74,11 +74,11 @@ export const ChartManagement = () => {
     { name: "Sunday", Sale: 0 },
   ];
   const chartData2 = [
-    { name: "One", St: 0 },
-    { name: "Two", St: 0 },
-    { name: "Three", St: 0 },
-    { name: "Four", St: 0 },
-    { name: "Five", St: 0 },
+    { name: "Một sao", St: 0 },
+    { name: "Hai sao", St: 0 },
+    { name: "Ba sao", St: 0 },
+    { name: "Bốn sao", St: 0 },
+    { name: "Năm sao", St: 0 },
   ];
   for (let index = 0; index < chartData2.length; index++) {
     for (let i = 0; i < chart.length; i++) {

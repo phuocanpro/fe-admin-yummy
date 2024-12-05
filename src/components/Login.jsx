@@ -17,6 +17,7 @@ const Login = () => {
   const onFinish = (values) => {
     const { email, password, remember } = values;
 
+    console.log(values);
     const fetchData = async () => {
       const response = await UserAPI.Login(values).then((res) => res);
 

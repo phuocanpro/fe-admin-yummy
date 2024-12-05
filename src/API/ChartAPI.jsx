@@ -36,5 +36,10 @@ const ChartAPI = {
     const url = `api/comment/totalRatingByOwner/${user_id}`;
     return axiosClient.get(url);
   },
+
+  dishAmount: (user_id) => {
+    const url = `api/dish/dishAmount/${user_id}`;
+    return axiosClient.get(url);
+  },
 };
 export default ChartAPI;

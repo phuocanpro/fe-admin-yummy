@@ -1,23 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form, Input, DatePicker, Row, Col } from "antd";
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
 import "../../styles/styles.css";
-import { PieChart } from "recharts";
 import ChartAPI from "../../API/ChartAPI";
 import Chart from "../Admin/chart/Chart";
 export const Chartow = () => {
-  let date = new Date().toJSON().slice(0, 10);
   const [chart, setChart] = useState([]);
   const [revenueByMonthByOwer, setrevenueByMonthByOwer] = useState([]);
   const [totalOrderByWeekdayByOwner, settotalOrderByWeekdayByOwner] = useState(
     []
   );
   const [totalRatingByOwner, settotalRatingByOwner] = useState([]);
+  const [dishAmount, setDishAmount] = useState([]);
+
   const idUser = localStorage.getItem("userId");
 
   useEffect(() => {
@@ -34,13 +27,21 @@ export const Chartow = () => {
       console.log("Rating Response:", ratingResponse);
       settotalRatingByOwner(ratingResponse);
 
+      const dishResponse = await ChartAPI.dishAmount(idUser);
+      console.log("Dish Response:", dishResponse);
+      setDishAmount(dishResponse);
+
       // Khi tất cả dữ liệu đã được lấy, bạn cũng có thể in ra toàn bộ chart data
-      setChart([...revenueResponse, ...orderResponse, ...ratingResponse]);
+      setChart([
+        ...revenueResponse,
+        ...orderResponse,
+        ...ratingResponse,
+        ...dishResponse,
+      ]);
       console.log("Chart Data:", chart);
     };
 
     fetchChartData();
-    // setChart([...revenueData, ...revenueByMonthByOwer, ...totalOrderByWeekdayByOwner, ...totalRatingByOwner])
   }, []);
 
   const chartData = [
@@ -66,20 +67,7 @@ export const Chartow = () => {
     { name: "Saturday", Sale: 0 },
     { name: "Sunday", Sale: 0 },
   ];
-  //   const chartData2 = [
-  //     { name: "One", St: 0 },
-  //     { name: "Two", St: 0 },
-  //     { name: "Three", St: 0 },
-  //     { name: "Four", St: 0 },
-  //     { name: "Five", St: 0 },
-  //     ];
-  //     for (let index = 0; index < chartData2.length; index++) {
-  //         for (let i = 0; i < chart.length; i++) {
-  //           if (chart[i]["name"] === index+1) { // Changed from index + 1 to index
-  //             chartData2[index]["St"] = chart[i]["count"];
-  //           }
-  //         }
-  //       }
+
   const monthNames = [
     "Jan",
     "Feb",
@@ -120,14 +108,32 @@ export const Chartow = () => {
       }
     }
   }
-  //   for (let index = 0; index < chartData.length; index++) {
-  //     for (let i = 0; i < chart.length; i++) {
-  //       if (dayNames.indexOf(chart[i]["name2"]) === index) {
-  //         chartData[index][""] = chart[i]["total"];
-  //         console.log(chartData);
-  //       }
-  //     }
-  //   }
+
+  const chartData2 = [
+    { name: "Một sao", St: 0 },
+    { name: "Hai sao", St: 0 },
+    { name: "Ba sao", St: 0 },
+    { name: "Bốn sao", St: 0 },
+    { name: "Năm sao", St: 0 },
+  ];
+  for (let index = 0; index < chartData2.length; index++) {
+    for (let i = 0; i < chart.length; i++) {
+      if (chart[i]["name"] === index + 1) {
+        // Changed from index + 1 to index
+        chartData2[index]["St"] = chart[i]["count"];
+      }
+    }
+  }
+  console.log("chartData2:", chartData2);
+
+  const chartData4 = dishAmount.map((dish, index) => {
+    return {
+      name: dish.name,
+      St: parseInt(dish.total_quantity),
+    };
+  });
+
+  console.log("Chart Data 4:", chartData4);
 
   return (
     <div style={{ flex: 3 }}>
@@ -137,14 +143,11 @@ export const Chartow = () => {
       {chartData1 && (
         <Chart data={chartData1} title="Đơn Hàng" grid dataKey="Sale" />
       )}
-      {totalRatingByOwner && (
-        <Chart
-          data={totalRatingByOwner}
-          title="Đánh Giá"
-          grid
-          dataKey="count"
-          pie
-        />
+      {chartData2 && (
+        <Chart data={chartData2} title="Đánh Giá" grid dataKey="St" pie />
+      )}
+      {chartData4 && (
+        <Chart data={chartData4} title="Món ăn" grid dataKey="St" pie />
       )}
     </div>
   );

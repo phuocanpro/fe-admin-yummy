@@ -13,7 +13,6 @@ import chartIcon from "../../assets/images/chart-icon.png";
 import OrderAllManagement from "./OrderAllManagement";
 import { useSelector } from "react-redux";
 import ChartManagement from "./ChartManagement";
-
 const AdminDashboard = () => {
   const [activeComponent, setActiveComponent] = useState("UserManagement");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
