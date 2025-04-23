@@ -17,8 +17,8 @@ const DishAPI = {
     return axiosClient.get(url);
   },
 
-  Put: (data) => {
-    const url = `/api/dish/update`;
+  Put: (id, data) => {
+    const url = `/api/dish/update/${id}`;
     return axiosClient.put(url, data);
   },
 
@@ -28,6 +28,7 @@ const DishAPI = {
   },
 
   Delete: (id) => {
+    console.log("id de", id)
     const url = `/api/dish/delete/${id}`;
     return axiosClient.delete(url);
   },

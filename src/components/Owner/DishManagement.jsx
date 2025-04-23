@@ -56,8 +56,11 @@ const DishManagement = () => {
     const fetchData = async () => {
       try {
         const data = await getAllDishes();
-        if (data) {
+        // Kiểm tra nếu data là mảng trước khi gán
+        if (Array.isArray(data)) {
           setDishData(data);
+        } else {
+          console.log("Dữ liệu không phải là mảng");
         }
       } catch (error) {
         console.log("err", error);
@@ -65,6 +68,7 @@ const DishManagement = () => {
     };
     fetchData();
   }, [isModalVisible]);
+
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -94,9 +98,8 @@ const DishManagement = () => {
 
   const handleAddOrUpdateDish = async () => {
     if (rowSelected) {
-      const res = await DishAPI.Put(stateDetails);
+      const res = await DishAPI.Put(rowSelected, stateDetails);
       if (res.status === "success") {
-        console.log("dong");
         handleCancel();
       }
     } else {

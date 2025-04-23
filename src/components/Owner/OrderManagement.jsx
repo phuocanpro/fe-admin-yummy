@@ -45,12 +45,12 @@ const OrderManagement = () => {
     const fetchData = async () => {
       try {
         const data = await getItem();
-          setInfoData(data);
+        setInfoData(data);
       } catch (error) {
         console.log("err", error);
       }
     };
-   
+
     fetchData();
     fetchProcess();
     fetchFinish();
@@ -67,7 +67,7 @@ const OrderManagement = () => {
       fetchDelivery();
       // Bạn cũng có thể cài đặt thông báo ở đây
     });
-  
+
     // Nhớ cleanup listener khi component unmount
     return () => unsubscribe();
   }, [])
@@ -81,7 +81,7 @@ const OrderManagement = () => {
       if (status === "") {
 
       } else {
-        console.log("id",id.toString(), " ", status);
+        console.log("id", id.toString(), " ", status);
 
         id = id.toString();
 
@@ -108,7 +108,7 @@ const OrderManagement = () => {
 
   const fetchFinish = async () => {
     const data = await db.collection('wait').where('status', '==', 'Hoàn thành').where('res_id', '==', infoData.id).get();
-    if (orderData){
+    if (orderData) {
       setOrderData(data.docs.map(doc => ({
         id: doc.id,
         customer: {
@@ -156,7 +156,7 @@ const OrderManagement = () => {
 
   const fetchProcess = async () => {
     const data = await db.collection('wait').where('status', '==', 'Đang xử lý').where('res_id', '==', infoData.id).get();
-    if (orderData){
+    if (orderData) {
       setOrderData(data.docs.map(doc => ({
         id: doc.id,
         customer: {
@@ -181,24 +181,24 @@ const OrderManagement = () => {
 
   const fetchDelivery = async () => {
     const data = await db.collection('wait').where('status', '==', 'Đang giao').where('res_id', '==', infoData.id).get();
-    if (orderData){
-       setOrderData(data.docs.map(doc => ({
-      id: doc.id,
-      customer: {
-        name: doc.data().customer.name,
-        address: doc.data().customer.address,
-      },
-      status: doc.data().status,
-      total: doc.data().total,
-      order_id: doc.data().order_id,
-      dishes: doc.data().dishes.map(dish => ({
-        name: dish.name,
-        options: dish.options,
-        price: dish.price,
-        quantity: dish.quantity
-      })),
-      method: doc.data().method = 0 ? "Tiền mặt" : "Trực tuyến"
-    })));
+    if (orderData) {
+      setOrderData(data.docs.map(doc => ({
+        id: doc.id,
+        customer: {
+          name: doc.data().customer.name,
+          address: doc.data().customer.address,
+        },
+        status: doc.data().status,
+        total: doc.data().total,
+        order_id: doc.data().order_id,
+        dishes: doc.data().dishes.map(dish => ({
+          name: dish.name,
+          options: dish.options,
+          price: dish.price,
+          quantity: dish.quantity
+        })),
+        method: doc.data().method = 0 ? "Tiền mặt" : "Trực tuyến"
+      })));
     }
     setOrderData(data.docs.map(doc => ({
       id: doc.id,
@@ -384,7 +384,7 @@ const OrderManagement = () => {
           <Card className="status-card" onClick={() => fetchFinish()}>
             <Text className="status-title">Đã hoàn thành</Text>
             <Text className="status-count">
-            {length4 && `${length4} đơn hàng`}
+              {length4 && `${length4} đơn hàng`}
             </Text>
           </Card>
         </Col>

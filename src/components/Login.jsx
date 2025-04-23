@@ -29,6 +29,7 @@ const Login = () => {
           setError("Mật khẩu sai");
         }
       } else {
+        console.log("Thanh cong")
         localStorage.setItem("userId", response.user.id);
         if (response.user.role === "admin") {
           navigate("/admin-dashboard");
