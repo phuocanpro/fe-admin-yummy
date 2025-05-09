@@ -117,13 +117,17 @@ const DishManagement = () => {
   };
 
   const handleDeleteDish = async () => {
-    const res = await DishAPI.Delete(rowSelected);
+  const res = await DishAPI.Delete(rowSelected);
 
-    if (res.status === "success") {
-      setRowSelected("");
-      handleCancel();
-    }
-  };
+  if (res.status === "success") {
+    setRowSelected("");  // Clear selected row
+    handleCancel();
+    // Reload data after deletion
+    const data = await getAllDishes();  // Fetch updated data
+    setDishData(data);  // Update the dishData state
+  }
+};
+
 
   const handleDateChange = (dates) => {
     setDates(dates);
