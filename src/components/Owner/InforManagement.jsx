@@ -45,8 +45,8 @@ const InforManagement = () => {
     const fetchData = async () => {
       try {
         const data = await getItem();
-          setInfoData(data);
-          form.setFieldsValue(data);
+        setInfoData(data);
+        form.setFieldsValue(data);
       } catch (error) {
         console.log("err", error);
       }
@@ -61,10 +61,11 @@ const InforManagement = () => {
   }, [form, infoData]);
 
 
-  const handleUpdate = (values) => {
-      setInfoData(values);
-      const res = RestaurantAPI.Put(infoData);
-    };
+  const handleUpdate = async (values) => {
+    setInfoData(values);
+    const id = infoData.id || values.id;
+    const res = await RestaurantAPI.Put(id, values);
+  };
 
 
   return (

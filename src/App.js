@@ -7,7 +7,7 @@ import OwnerDashboard from "./components/Owner/OwnerDashboard";
 import "../src/styles/styles.css";
 import RegisterRestaurant from "./components/Owner/RegisterRestaurant";
 import ForgotPassword from "./components/ForgotPassword";
-import  firebase  from '@firebase/app'
+import firebase from '@firebase/app'
 import "firebase/firestore";
 import "firebase/auth";
 
@@ -27,6 +27,8 @@ const App = () => {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+
+
       </Routes>
     </Router>
   );

@@ -105,16 +105,21 @@ const DishManagement = () => {
     } else {
       const idUser = localStorage.getItem("userId");
       const restaurant = await RestaurantAPI.SearchColumn("user_id", idUser);
-      setStateDetails({
+      console.log(restaurant[0].id);
+
+      // Tạo object mới bao gồm restaurant_id
+      const newDishData = {
         ...stateDetails,
         restaurant_id: restaurant[0].id,
-      });
-      const res = await DishAPI.Create(stateDetails);
+      };
+
+      const res = await DishAPI.Create(newDishData);
       if (res.status === "success") {
         handleCancel();
       }
     }
   };
+
 
   const handleDeleteDish = async () => {
     const res = await DishAPI.Delete(rowSelected);
@@ -122,8 +127,15 @@ const DishManagement = () => {
     if (res.status === "success") {
       setRowSelected("");
       handleCancel();
+
+      // Gọi lại lấy dữ liệu món ăn mới nhất
+      const data = await getAllDishes();
+      if (Array.isArray(data)) {
+        setDishData(data);
+      }
     }
   };
+
 
   const handleDateChange = (dates) => {
     setDates(dates);
