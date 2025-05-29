@@ -26,7 +26,7 @@ const { RangePicker } = DatePicker;
 const ReviewManagement = () => {
   const [form] = Form.useForm();
   const [reviewData, setReviewData] = useState([]);
-  
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [rowSelected, setRowSelected] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,6 +45,7 @@ const ReviewManagement = () => {
     const fetchData = async () => {
       try {
         const data = await getAllReviews();
+        console.log("Review data:", data); // 👈 Kiểm tra ở đây
         setReviewData(data);
       } catch (error) {
         console.log("err", error);
@@ -54,9 +55,24 @@ const ReviewManagement = () => {
   }, [isModalVisible]);
 
 
-  const handleDeleteReview = async () => {
-    const res = await ReviewAPI.Delete(rowSelected);
+
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      const res = await ReviewAPI.Delete(reviewId);
+      if (res.status === "success") {
+        // Gọi lại load danh sách review mới nhất
+        const data = await getAllReviews();
+        setReviewData(data);
+      } else {
+        // Xử lý nếu xoá không thành công
+        console.log("Xóa không thành công", res);
+      }
+    } catch (error) {
+      console.log("Lỗi khi xoá review:", error);
+    }
   };
+
+
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -189,7 +205,7 @@ const ReviewManagement = () => {
           <Button
             className="pink-button"
             icon={<DeleteOutlined />}
-            onClick={() => handleDeleteReview(record.item_id, record.user_id)}
+            onClick={() => handleDeleteReview(record.id)}
           >
             Xóa
           </Button>
@@ -234,7 +250,7 @@ const ReviewManagement = () => {
           };
         }}
       />
-      
+
     </div>
   );
 };

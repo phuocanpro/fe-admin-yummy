@@ -27,8 +27,8 @@ const RestaurantAPI = {
     return axiosClient.get(url);
   },
 
-  Put: (data) => {
-    const url = `/api/restaurant/update`;
+  Put: (id, data) => {
+    const url = `/api/restaurant/update/${id}`;
     return axiosClient.put(url, data);
   },
 
