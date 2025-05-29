@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Typography, List, Input, Button } from 'antd';
-import firebase from '@firebase/app'
+import firebase from '@firebase/app';
 import "firebase/firestore";
 import "firebase/auth";
 
@@ -9,14 +9,31 @@ const { Title, Text } = Typography;
 const ChatWindow = ({ chat, userInfos }) => {
     const [inputMessage, setInputMessage] = useState('');
     const [sending, setSending] = useState(false);
+    const [messages, setMessages] = useState(chat?.messages || []);
     const messagesEndRef = useRef(null);
-    var db = firebase.firestore();
+    const db = firebase.firestore();
 
+    // Scroll khi messages thay đổi
     useEffect(() => {
         if (messagesEndRef.current) {
             messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [chat?.messages]);
+    }, [messages]);
+
+    // Real-time update Firestore
+    useEffect(() => {
+        if (!chat?.id) return;
+
+        const unsubscribe = db.collection("chats").doc(chat.id)
+            .onSnapshot((doc) => {
+                const data = doc.data();
+                if (data?.messages) {
+                    setMessages(data.messages);
+                }
+            });
+
+        return () => unsubscribe();
+    }, [chat?.id]);
 
     if (!chat) {
         return <Title level={4}>Chọn một cuộc trò chuyện</Title>;
@@ -41,7 +58,6 @@ const ChatWindow = ({ chat, userInfos }) => {
                 messages: firebase.firestore.FieldValue.arrayUnion(newMessage),
                 lastest_timestamp: newMessage.timestamp,
             });
-
             setInputMessage('');
         } catch (error) {
             console.error('Lỗi gửi tin nhắn:', error);
@@ -51,26 +67,12 @@ const ChatWindow = ({ chat, userInfos }) => {
     };
 
     return (
-        <div
-            style={{
-                height: 'calc(100vh - 64px)', // thay 64px bằng chiều cao header nếu có
-                display: 'flex',
-                flexDirection: 'column',
-            }}
-        >
-            <div
-                style={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    padding: 12,
-                }}
-            >
-                <Title level={4}>
-                    Đang trò chuyện với {user?.name || `Người dùng #${chat.user_id}`}
-                </Title>
+        <div style={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
+                <Title level={4}>Đang trò chuyện với {user?.name || `Người dùng #${chat.user_id}`}</Title>
 
                 <List
-                    dataSource={chat.messages}
+                    dataSource={messages}
                     renderItem={(msg, idx) => {
                         const isRestaurant = msg.sender === 'restaurant';
                         const senderName = isRestaurant ? 'Bạn' : user?.name || `Người dùng #${chat.user_id}`;
@@ -91,30 +93,23 @@ const ChatWindow = ({ chat, userInfos }) => {
                                     alignItems: isRestaurant ? 'flex-end' : 'flex-start',
                                 }}
                             >
-                                <Text strong style={{ marginBottom: 4 }}>
-                                    {senderName}
-                                </Text>
+                                <Text strong>{senderName}</Text>
                                 <Text style={{ fontSize: 16 }}>{msg.message}</Text>
-                                <Text type="secondary" style={{ fontSize: 12 }}>
-                                    {msg.timestamp}
-                                </Text>
+                                <Text type="secondary" style={{ fontSize: 12 }}>{msg.timestamp}</Text>
                             </List.Item>
                         );
                     }}
                 />
-                {/* Dummy div để scroll tới cuối */}
                 <div ref={messagesEndRef} />
             </div>
 
-            <div
-                style={{
-                    padding: '8px 12px',
-                    borderTop: '1px solid #ddd',
-                    backgroundColor: '#fff',
-                    display: 'flex',
-                    gap: 8,
-                }}
-            >
+            <div style={{
+                padding: '8px 12px',
+                borderTop: '1px solid #ddd',
+                backgroundColor: '#fff',
+                display: 'flex',
+                gap: 8,
+            }}>
                 <Input.TextArea
                     rows={2}
                     value={inputMessage}
@@ -129,13 +124,7 @@ const ChatWindow = ({ chat, userInfos }) => {
                     disabled={sending}
                     style={{ flex: 1 }}
                 />
-                <Button
-                    type="primary"
-                    onClick={handleSendMessage}
-                    loading={sending}
-                >
-                    Gửi
-                </Button>
+                <Button type="primary" onClick={handleSendMessage} loading={sending}>Gửi</Button>
             </div>
         </div>
     );
