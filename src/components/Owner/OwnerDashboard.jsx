@@ -42,8 +42,6 @@ const OwnerDashboard = () => {
         return <ChatPage />;
       case "InforManagement":
         return <InforManagement />;
-      case "Chartow":
-        return <Chartow />;
       default:
         return <DishManagement />;
     }
@@ -95,10 +93,6 @@ const OwnerDashboard = () => {
           <button onClick={() => setActiveComponent("InforManagement")}>
             <img src={infoIcon} alt="Info Icon" className="sidebar-icon" /> Quản
             lý thông tin
-          </button>
-          <button onClick={() => setActiveComponent("Chartow")}>
-            <img src={chartIcon} alt="Chart Icon" className="sidebar-icon" />{" "}
-            Biểu Đồ
           </button>
         </div>
         <div className="content" style={{ flex: 1, backgroundColor: '#f5f5f5', overflowY: 'auto', padding: 16 }}>{renderComponent()}</div>
